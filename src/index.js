@@ -72,7 +72,7 @@ d3.csv("flights-3m.json", function(error, flights) {
     // We also listen to the chart's brush events to update the display.
     var chart = d3.selectAll(".chart")
         .data(charts)
-        .each(function(chart) { chart.on("brush", renderAll).on("brushend", renderAll); });
+        .each(function(chart) { chart.on("brush", renderAll).on("end", renderAll); });
 
     // Render the initial lists.
     var list = d3.selectAll(".list")
@@ -275,7 +275,7 @@ d3.csv("flights-3m.json", function(error, flights) {
             }
         }
 
-        brush.on("brushstart.chart", function() {
+        brush.on("start.chart", function() {
             var div = d3.select(this.parentNode.parentNode.parentNode);
             div.select(".title a").style("display", null);
         });
@@ -293,7 +293,7 @@ d3.csv("flights-3m.json", function(error, flights) {
             dimension.filterRange(extent);
         });
 
-        brush.on("brushend.chart", function() {
+        brush.on("end.chart", function() {
             if (brush.empty()) {
                 var div = d3.select(this.parentNode.parentNode.parentNode);
                 div.select(".title a").style("display", "none");
@@ -352,6 +352,12 @@ d3.csv("flights-3m.json", function(error, flights) {
             return chart;
         };
 
-        return d3.rebind(chart, brush, "on");
+        chart.on = function() {
+            var value = dispatch.on.apply(brush, arguments);
+            return value === brush ? chart : value;
+        };
+
+        return chart;
+        // return d3.rebind(chart, brush, "on");
     }
 });
