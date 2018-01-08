@@ -1,7 +1,8 @@
+
 @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
 
 body {
-    font-family: "Helvetica Neue";
+    font-family: 'Helvetica Neue';
     margin: 40px auto;
     width: 960px;
     min-height: 2000px;
@@ -32,7 +33,7 @@ h2 {
 }
 
 h1, h2 {
-    font-family: "Yanone Kaffeesatz";
+    font-family: 'Yanone Kaffeesatz';
     text-rendering: optimizeLegibility;
 }
 
@@ -66,22 +67,7 @@ h1, h2 {
     fill: steelblue;
 }
 
-.axis path, .axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-}
-
-.axis text {
-    font: 10px sans-serif;
-}
-
-.brush rect.extent {
-    fill: steelblue;
-    fill-opacity: .125;
-}
-
-.brush .resize path {
+.brush-handle {
     fill: #eee;
     stroke: #666;
 }
@@ -95,7 +81,7 @@ h1, h2 {
 }
 
 #distance-chart {
-    width: 420px;
+    width: 430px;
 }
 
 #date-chart {
@@ -114,7 +100,7 @@ h1, h2 {
 #flight-list .flight {
     line-height: 1.5em;
     background: #eee;
-    width: 640px;
+    width: 925px;
     margin-bottom: 1px;
 }
 
@@ -124,13 +110,33 @@ h1, h2 {
 
 #flight-list .flight div {
     display: inline-block;
-    width: 100px;
 }
 
-#flight-list div.distance,
+#flight-list div.time {
+    width: 100px;
+    text-align: left;
+}
+
+#flight-list div.origin {
+    width: 50px;
+    text-align: right;
+    padding-right: 15px;
+}
+
+#flight-list div.destination {
+    width: 100px;
+    text-align: left;
+    padding-left: 15px;
+}
+
+#flight-list div.distance {
+    width: 100px;
+    text-align: left;
+}
+
 #flight-list div.delay {
-    width: 160px;
-    padding-right: 10px;
+    width: 120px;
+    padding-right: 0px;
     text-align: right;
 }
 
