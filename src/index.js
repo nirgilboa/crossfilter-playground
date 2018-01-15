@@ -43,10 +43,10 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
     // Sunday is zero
     const weekDay = tripsCf.dimension(d => d.x_week_day_local);
     const weekDays = weekDay.group();
-    const minDelay = -1200;
-    const maxDelay = 3000;
+    const minDelay = -300;
+    const maxDelay = 600;
     const avgDelay = tripsCf.dimension(d => Math.max(minDelay, Math.min(maxDelay, d.x_avg_delay_arrival)));
-    const avgDelays = avgDelay.group(d => Math.floor(d / 60) * 60);
+    const avgDelays = avgDelay.group(d => Math.floor(d / 60));
 
     const charts = [
 
@@ -68,8 +68,8 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
             .dimension(avgDelay)
             .group(avgDelays)
             .x(d3.scaleLinear()
-                .domain([Math.floor(minDelay / 60) , Math.floor(maxDelay / 60)])
-                .rangeRound([0, Math.floor((maxDelay - minDelay) / 60)])),
+                .domain([minDelay / 60 , 1+ (maxDelay / 60)])
+                .rangeRound([0, 10 * Math.floor((maxDelay - minDelay) / 60)])),
 
 
         barChart()
