@@ -73,15 +73,15 @@ h1, h2 {
 }
 
 #hour-chart {
-    width: 260px;
+    width: 320px;
 }
 
 #delay-chart {
-    width: 230px;
+    width: 320px;
 }
 
-#distance-chart {
-    width: 430px;
+#weekday-chart {
+    width: 200px;
 }
 
 #date-chart {

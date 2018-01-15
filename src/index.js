@@ -46,7 +46,7 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
     const minDelay = -300;
     const maxDelay = 600;
     const avgDelay = tripsCf.dimension(d => Math.max(minDelay, Math.min(maxDelay, d.x_avg_delay_arrival)));
-    const avgDelays = avgDelay.group(d => Math.floor(d / 60));
+    const avgDelays = avgDelay.group(d => Math.floor(d / 6) / 10);
 
     const charts = [
 
@@ -55,21 +55,21 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
             .group(hours)
             .x(d3.scaleLinear()
                 .domain([0, 24])
-                .rangeRound([0, 10 * 24])),
+                .rangeRound([0, 300])),
 
         barChart()
             .dimension(weekDay)
             .group(weekDays)
             .x(d3.scaleLinear()
                 .domain([0, 10])
-                .rangeRound([0, 10 * 10])),
+                .rangeRound([0, 170])),
 
         barChart()
             .dimension(avgDelay)
             .group(avgDelays)
             .x(d3.scaleLinear()
                 .domain([minDelay / 60 , 1+ (maxDelay / 60)])
-                .rangeRound([0, 10 * Math.floor((maxDelay - minDelay) / 60)])),
+                .rangeRound([0, 300])),
 
 
         barChart()

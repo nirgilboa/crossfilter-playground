@@ -11949,10 +11949,10 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
         return Math.max(minDelay, Math.min(maxDelay, d.x_avg_delay_arrival));
     });
     var avgDelays = avgDelay.group(function (d) {
-        return Math.floor(d / 60);
+        return Math.floor(d / 6) / 10;
     });
 
-    var charts = [barChart().dimension(hour).group(hours).x(d3.scaleLinear().domain([0, 24]).rangeRound([0, 10 * 24])), barChart().dimension(weekDay).group(weekDays).x(d3.scaleLinear().domain([0, 10]).rangeRound([0, 10 * 10])), barChart().dimension(avgDelay).group(avgDelays).x(d3.scaleLinear().domain([minDelay / 60, 1 + maxDelay / 60]).rangeRound([0, 10 * Math.floor((maxDelay - minDelay) / 60)])), barChart().dimension(date).group(dates).round(d3.timeDay.round).x(d3.scaleTime().domain([minDate, maxDate]).rangeRound([0, 10 * 90]))];
+    var charts = [barChart().dimension(hour).group(hours).x(d3.scaleLinear().domain([0, 24]).rangeRound([0, 300])), barChart().dimension(weekDay).group(weekDays).x(d3.scaleLinear().domain([0, 10]).rangeRound([0, 170])), barChart().dimension(avgDelay).group(avgDelays).x(d3.scaleLinear().domain([minDelay / 60, 1 + maxDelay / 60]).rangeRound([0, 300])), barChart().dimension(date).group(dates).round(d3.timeDay.round).x(d3.scaleTime().domain([minDate, maxDate]).rangeRound([0, 10 * 90]))];
 
     // Given our array of charts, which we assume are in the same order as the
     // .chart elements in the DOM, bind the charts to the DOM and render them.
