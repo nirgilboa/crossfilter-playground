@@ -11879,9 +11879,11 @@ function transform(node) {
 "use strict";
 
 
-var _d = __webpack_require__(172);
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-var d3 = _interopRequireWildcard(_d);
+var _d2 = __webpack_require__(172);
+
+var d3 = _interopRequireWildcard(_d2);
 
 var _crossfilter = __webpack_require__(463);
 
@@ -11894,8 +11896,8 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 /* global d3 crossfilter reset */
 
 // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
-d3.csv('https://alexmacy.github.io/crossfilter/flights-3m.json', function (error, flights) {
-    console.log(flights.length);
+d3.json('data/trips_2017_10.json', function (error, trips) {
+    console.log(trips.length);
 
     // Various formatters.
     var formatNumber = d3.format(',d');
@@ -11909,51 +11911,59 @@ d3.csv('https://alexmacy.github.io/crossfilter/flights-3m.json', function (error
         return d3.timeDay(d.date);
     });
 
+    var minDate = parseDate(trips[0].date);
+    var maxDate = parseDate(trips[0].date);
+
     // A little coercion, since the CSV is untyped.
-    flights.forEach(function (d, i) {
+    trips.forEach(function (d, i) {
         d.index = i;
         d.date = parseDate(d.date);
-        d.delay = +d.delay;
-        d.distance = +d.distance;
+        if (d.date.getTime() > maxDate.getTime()) {
+            maxDate = d.date;
+        }
+        if (d.date.getTime() < minDate.getTime()) {
+            minDate = d.date;
+        }
     });
 
     // Create the crossfilter for the relevant dimensions and groups.
-    var flight = (0, _crossfilter2.default)(flights);
+    var tripsCf = (0, _crossfilter2.default)(trips);
 
-    var all = flight.groupAll();
-    var date = flight.dimension(function (d) {
+    var all = tripsCf.groupAll();
+    var date = tripsCf.dimension(function (d) {
         return d.date;
     });
     var dates = date.group(d3.timeDay);
-    var hour = flight.dimension(function (d) {
-        return d.date.getHours() + d.date.getMinutes() / 60;
+    var hour = tripsCf.dimension(function (d) {
+        return d.x_hour_local;
     });
-    var hours = hour.group(Math.floor);
-    var delay = flight.dimension(function (d) {
-        return Math.max(-60, Math.min(149, d.delay));
+    var hours = hour.group();
+    // Sunday is zero
+    var weekDay = tripsCf.dimension(function (d) {
+        return d.x_week_day_local;
     });
-    var delays = delay.group(function (d) {
-        return Math.floor(d / 10) * 10;
+    var weekDays = weekDay.group();
+    var minDelay = -1200;
+    var maxDelay = 3000;
+    var avgDelay = tripsCf.dimension(function (d) {
+        return Math.max(minDelay, Math.min(maxDelay, d.x_avg_delay_arrival));
     });
-    var distance = flight.dimension(function (d) {
-        return Math.min(1999, d.distance);
-    });
-    var distances = distance.group(function (d) {
-        return Math.floor(d / 50) * 50;
+    var avgDelays = avgDelay.group(function (d) {
+        return Math.floor(d / 60) * 60;
     });
 
-    var charts = [barChart().dimension(hour).group(hours).x(d3.scaleLinear().domain([0, 24]).rangeRound([0, 10 * 24])), barChart().dimension(delay).group(delays).x(d3.scaleLinear().domain([-60, 150]).rangeRound([0, 10 * 21])), barChart().dimension(distance).group(distances).x(d3.scaleLinear().domain([0, 2000]).rangeRound([0, 10 * 40])), barChart().dimension(date).group(dates).round(d3.timeDay.round).x(d3.scaleTime().domain([new Date(2001, 0, 1), new Date(2001, 3, 1)]).rangeRound([0, 10 * 90])).filter([new Date(2001, 1, 1), new Date(2001, 2, 1)])];
+    var charts = [barChart().dimension(hour).group(hours).x(d3.scaleLinear().domain([0, 24]).rangeRound([0, 10 * 24])), barChart().dimension(weekDay).group(weekDays).x(d3.scaleLinear().domain([0, 10]).rangeRound([0, 10 * 10])), barChart().dimension(avgDelay).group(avgDelays).x(d3.scaleLinear().domain([Math.floor(minDelay / 60), Math.floor(maxDelay / 60)]).rangeRound([0, Math.floor((maxDelay - minDelay) / 60)])), barChart().dimension(date).group(dates).round(d3.timeDay.round).x(d3.scaleTime().domain([minDate, maxDate]).rangeRound([0, 10 * 90]))];
 
     // Given our array of charts, which we assume are in the same order as the
     // .chart elements in the DOM, bind the charts to the DOM and render them.
-    // We also listen to the chart's brush events to update the display.
+    // We also listen to the chart's brush events to update the display.c
     var chart = d3.selectAll('.chart').data(charts);
 
     // Render the initial lists.
-    var list = d3.selectAll('.list').data([flightList]);
+    var list = d3.selectAll('.list').data([tripList]);
 
     // Render the total.
-    d3.selectAll('#total').text(formatNumber(flight.size()));
+    d3.selectAll('#total').text(formatNumber(tripsCf.size()));
 
     renderAll();
 
@@ -11971,7 +11981,15 @@ d3.csv('https://alexmacy.github.io/crossfilter/flights-3m.json', function (error
 
     // Like d3.timeFormat, but faster.
     function parseDate(d) {
-        return new Date(2001, d.substring(0, 2) - 1, d.substring(2, 4), d.substring(4, 6), d.substring(6, 8));
+        var _d$split$map = d.split("-").map(function (x) {
+            return parseInt(x);
+        }),
+            _d$split$map2 = _slicedToArray(_d$split$map, 3),
+            year = _d$split$map2[0],
+            month = _d$split$map2[1],
+            day = _d$split$map2[2];
+
+        return new Date(year, month, day);
     }
 
     window.filter = function (filters) {
@@ -11986,56 +12004,56 @@ d3.csv('https://alexmacy.github.io/crossfilter/flights-3m.json', function (error
         renderAll();
     };
 
-    function flightList(div) {
-        var flightsByDate = nestByDate.entries(date.top(40));
-
-        div.each(function () {
-            var date = d3.select(this).selectAll('.date').data(flightsByDate, function (d) {
-                return d.key;
-            });
-
-            date.exit().remove();
-
-            date.enter().append('div').attr('class', 'date').append('div').attr('class', 'day').text(function (d) {
-                return formatDate(d.values[0].date);
-            }).merge(date);
-
-            var flight = date.order().selectAll('.flight').data(function (d) {
-                return d.values;
-            }, function (d) {
-                return d.index;
-            });
-
-            flight.exit().remove();
-
-            var flightEnter = flight.enter().append('div').attr('class', 'flight');
-
-            flightEnter.append('div').attr('class', 'time').text(function (d) {
-                return formatTime(d.date);
-            });
-
-            flightEnter.append('div').attr('class', 'origin').text(function (d) {
-                return d.origin;
-            });
-
-            flightEnter.append('div').attr('class', 'destination').text(function (d) {
-                return d.destination;
-            });
-
-            flightEnter.append('div').attr('class', 'distance').text(function (d) {
-                return formatNumber(d.distance) + ' mi.';
-            });
-
-            flightEnter.append('div').attr('class', 'delay').classed('early', function (d) {
-                return d.delay < 0;
-            }).text(function (d) {
-                return formatChange(d.delay) + ' min.';
-            });
-
-            flightEnter.merge(flight);
-
-            flight.order();
-        });
+    function tripList(div) {
+        // const tripsByDate = nestByDate.entries(date.top(40));
+        //
+        // div.each(function () {
+        //     const date = d3.select(this).selectAll('.date')
+        //         .data(tripsByDate, d => d.key);
+        //
+        //     date.exit().remove();
+        //
+        //     date.enter().append('div')
+        //         .attr('class', 'date')
+        //         .append('div')
+        //         .attr('class', 'day')
+        //         .text(d => formatDate(d.values[0].date))
+        //         .merge(date);
+        //
+        //
+        //     const flight = date.order().selectAll('.flight')
+        //         .data(d => d.values, d => d.index);
+        //
+        //     flight.exit().remove();
+        //
+        //     const flightEnter = flight.enter().append('div')
+        //         .attr('class', 'flight');
+        //
+        //     flightEnter.append('div')
+        //         .attr('class', 'time')
+        //         .text(d => formatTime(d.date));
+        //
+        //     flightEnter.append('div')
+        //         .attr('class', 'origin')
+        //         .text(d => d.origin);
+        //
+        //     flightEnter.append('div')
+        //         .attr('class', 'destination')
+        //         .text(d => d.destination);
+        //
+        //     flightEnter.append('div')
+        //         .attr('class', 'distance')
+        //         .text(d => `${formatNumber(d.distance)} mi.`);
+        //
+        //     flightEnter.append('div')
+        //         .attr('class', 'delay')
+        //         .classed('early', d => d.delay < 0)
+        //         .text(d => `${formatChange(d.delay)} min.`);
+        //
+        //     flightEnter.merge(flight);
+        //
+        //     flight.order();
+        // });
     }
 
     function barChart() {
