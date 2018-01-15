@@ -10,7 +10,7 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
     const formatNumber = d3.format(',d');
 
     const formatChange = d3.format('+,d');
-    const formatDate = d3.timeFormat('%B %d, %Y');
+    const formatDate = d3.timeFormat('%d/%m/%Y');
     const formatTime = d3.timeFormat('%I:%M %p');
 
     // A nest operator, for grouping the flight list.
@@ -45,9 +45,13 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
     const weekDays = weekDay.group();
     const minDelay = -300;
     const maxDelay = 600;
-    const avgDelay = tripsCf.dimension(d => Math.max(minDelay, Math.min(maxDelay, d.x_avg_delay_arrival)));
-    const avgDelays = avgDelay.group(d => Math.floor(d / 6) / 10);
+    const avgDelay = tripsCf.dimension(d => d.x_avg_delay_arrival);
+    const avgDelays = avgDelay.group(d => {
+        let d2 = Math.max(minDelay, Math.min(maxDelay, d));
+        return Math.floor(d2 / 6) / 10
+    });
 
+    // window.avgDelay = avgDelay;
     const charts = [
 
         barChart()
@@ -127,55 +131,41 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
     };
 
     function tripList(div) {
-        // const tripsByDate = nestByDate.entries(date.top(40));
-        //
-        // div.each(function () {
-        //     const date = d3.select(this).selectAll('.date')
-        //         .data(tripsByDate, d => d.key);
-        //
-        //     date.exit().remove();
-        //
-        //     date.enter().append('div')
-        //         .attr('class', 'date')
-        //         .append('div')
-        //         .attr('class', 'day')
-        //         .text(d => formatDate(d.values[0].date))
-        //         .merge(date);
-        //
-        //
-        //     const flight = date.order().selectAll('.flight')
-        //         .data(d => d.values, d => d.index);
-        //
-        //     flight.exit().remove();
-        //
-        //     const flightEnter = flight.enter().append('div')
-        //         .attr('class', 'flight');
-        //
-        //     flightEnter.append('div')
-        //         .attr('class', 'time')
-        //         .text(d => formatTime(d.date));
-        //
-        //     flightEnter.append('div')
-        //         .attr('class', 'origin')
-        //         .text(d => d.origin);
-        //
-        //     flightEnter.append('div')
-        //         .attr('class', 'destination')
-        //         .text(d => d.destination);
-        //
-        //     flightEnter.append('div')
-        //         .attr('class', 'distance')
-        //         .text(d => `${formatNumber(d.distance)} mi.`);
-        //
-        //     flightEnter.append('div')
-        //         .attr('class', 'delay')
-        //         .classed('early', d => d.delay < 0)
-        //         .text(d => `${formatChange(d.delay)} min.`);
-        //
-        //     flightEnter.merge(flight);
-        //
-        //     flight.order();
-        // });
+
+        const tripsToShow = avgDelay.top(40);
+
+        div.each(function () {
+
+
+            const flight = div.selectAll('.flight')
+                .data(tripsToShow);
+
+            flight.exit().remove();
+
+            const flightEnter = flight.enter().append('div')
+                .attr('class', 'flight');
+
+            flightEnter.append('div')
+                .attr('class', 'time')
+                .text(d => formatDate(d.date));
+
+            flightEnter.append('div')
+                .attr('class', 'hour')
+                .text(d => d.x_hour_local);
+
+            flightEnter.append('div')
+                .attr('class', 'weekday')
+                .text(d => `${formatNumber(d.x_week_day_local)}`);
+
+            flightEnter.append('div')
+                .attr('class', 'delay')
+                .classed('early', d => d.x_avg_delay_arrival < 0)
+                .text(d => `${formatChange(d.x_avg_delay_arrival)} min.`);
+
+            flightEnter.merge(flight);
+
+            flight.order();
+        });
     }
 
     function barChart() {

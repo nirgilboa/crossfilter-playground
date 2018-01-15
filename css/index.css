@@ -117,7 +117,7 @@ h1, h2 {
     text-align: left;
 }
 
-#flight-list div.origin {
+#flight-list div.hour {
     width: 50px;
     text-align: right;
     padding-right: 15px;
