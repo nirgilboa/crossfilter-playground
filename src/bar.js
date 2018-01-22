@@ -33,7 +33,7 @@ export default function barChart() {
                 div.select('.title').append('a')
                     .attr('href', `javascript:reset(${id})`)
                     .attr('class', 'reset')
-                    .text('reset')
+                    .text('(איפוס)')
                     .style('display', 'none');
 
                 g = div.append('svg')
