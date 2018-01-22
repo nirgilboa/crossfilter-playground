@@ -5,3 +5,17 @@ body {
     border: 1px red solid;
 }
 
+.background.bar {
+    fill: #ccc;
+}
+
+.foreground.bar {
+    fill: steelblue;
+}
+
+.brush-handle {
+    fill: #eee;
+    stroke: #666;
+}
+
+

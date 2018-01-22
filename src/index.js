@@ -108,7 +108,7 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
         .data(charts);
 
     // Render the initial lists.
-    const list = d3.selectAll('.list')
+    const list = d3.selectAll('#flight-list')
         .data([tripList]);
 
     // Render the total.
@@ -151,29 +151,23 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
 
         div.each(function () {
 
-
             const flight = div.selectAll('.flight')
                 .data(tripsToShow);
 
             flight.exit().remove();
 
-            const flightEnter = flight.enter().append('div')
-                .attr('class', 'flight');
+            const flightEnter = flight.enter().append('tr')
 
-            flightEnter.append('div')
-                .attr('class', 'time')
+            flightEnter.append('td')
                 .text(d => formatDate(d.date));
 
-            flightEnter.append('div')
-                .attr('class', 'hour')
+            flightEnter.append('td')
                 .text(d => d.x_hour_local);
 
-            flightEnter.append('div')
-                .attr('class', 'weekday')
+            flightEnter.append('td')
                 .text(d => `${formatNumber(d.x_week_day_local)}`);
 
-            flightEnter.append('div')
-                .attr('class', 'delay')
+            flightEnter.append('td')
                 .classed('early', d => d.x_avg_delay_arrival < 0)
                 .text(d => `${formatChange(d.x_avg_delay_arrival / 60)} min.`);
 

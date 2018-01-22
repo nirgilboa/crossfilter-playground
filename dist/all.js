@@ -22824,7 +22824,7 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
     var chart = d3.selectAll('.chart').data(charts);
 
     // Render the initial lists.
-    var list = d3.selectAll('.list').data([tripList]);
+    var list = d3.selectAll('#flight-list').data([tripList]);
 
     // Render the total.
     d3.selectAll('#total').text(formatNumber(tripsCf.size()));
@@ -22878,21 +22878,21 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
 
             flight.exit().remove();
 
-            var flightEnter = flight.enter().append('div').attr('class', 'flight');
+            var flightEnter = flight.enter().append('tr');
 
-            flightEnter.append('div').attr('class', 'time').text(function (d) {
+            flightEnter.append('td').text(function (d) {
                 return formatDate(d.date);
             });
 
-            flightEnter.append('div').attr('class', 'hour').text(function (d) {
+            flightEnter.append('td').text(function (d) {
                 return d.x_hour_local;
             });
 
-            flightEnter.append('div').attr('class', 'weekday').text(function (d) {
+            flightEnter.append('td').text(function (d) {
                 return '' + formatNumber(d.x_week_day_local);
             });
 
-            flightEnter.append('div').attr('class', 'delay').classed('early', function (d) {
+            flightEnter.append('td').classed('early', function (d) {
                 return d.x_avg_delay_arrival < 0;
             }).text(function (d) {
                 return formatChange(d.x_avg_delay_arrival / 60) + ' min.';
@@ -42183,7 +42183,7 @@ exports = module.exports = __webpack_require__(472)(false);
 
 
 // module
-exports.push([module.i, "body {\n    padding: 30px;\n}\n.chart-wrapper {\n    border: 1px red solid;\n}\n\n", ""]);
+exports.push([module.i, "body {\n    padding: 30px;\n}\n.chart-wrapper {\n    border: 1px red solid;\n}\n\n.background.bar {\n    fill: #ccc;\n}\n\n.foreground.bar {\n    fill: steelblue;\n}\n\n.brush-handle {\n    fill: #eee;\n    stroke: #666;\n}\n\n\n", ""]);
 
 // exports
 
