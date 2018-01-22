@@ -9546,7 +9546,7 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
             month = _d$split$map2[1],
             day = _d$split$map2[2];
 
-        return new Date(year, month, day);
+        return new Date(year, month - 1, day);
     }
 
     window.filter = function (filters) {
