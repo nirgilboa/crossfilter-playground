@@ -117,7 +117,7 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
     // Like d3.timeFormat, but faster.
     function parseDate(d) {
         let [year, month, day] = d.split("-").map(x=>parseInt(x));
-        return new Date(year,month,day);
+        return new Date(year,month-1,day);
     }
 
     window.filter = filters => {
