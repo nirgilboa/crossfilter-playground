@@ -1,0 +1,30 @@
+@import "custom";
+@import "~bootstrap/scss/bootstrap";
+
+
+body {
+    padding: 30px;
+}
+.chart-wrapper {
+    border: 1px red solid;
+    min-height: 300px;
+}
+
+.chart {
+
+}
+
+.background.bar {
+    fill: #ccc;
+}
+
+.foreground.bar {
+    fill: steelblue;
+}
+
+.brush-handle {
+    fill: #eee;
+    stroke: #666;
+}
+
+

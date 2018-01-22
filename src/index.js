@@ -4,8 +4,7 @@ import barChart from './bar.js';
 import 'jquery';
 import Popper from 'popper.js';
 import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './css/my.css';
+import './scss/main.scss';
 
 
 /* global d3 crossfilter reset */
