@@ -200,7 +200,7 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
                     div.select('.title').append('a')
                         .attr('href', `javascript:reset(${id})`)
                         .attr('class', 'reset')
-                        .text('reset')
+                        .text('(אפס)')
                         .style('display', 'none');
 
                     g = div.append('svg')
