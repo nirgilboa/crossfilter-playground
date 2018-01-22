@@ -60,35 +60,38 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
             .callback(renderAll)
             .dimension(hour)
             .group(hours)
+            .colWidth(12)
             .x(d3.scaleLinear()
                 .domain([0, 24])
-                .rangeRound([0, 300])),
+                .rangeRound([0, 12*24])),
 
         barChart()
             .callback(renderAll)
             .dimension(weekDay)
             .group(weekDays)
+            .colWidth(20)
             .x(d3.scaleLinear()
-                .domain([0, 10])
-                .rangeRound([0, 170])),
+                .domain([0, 7])
+                .rangeRound([0, 7*20])),
 
         barChart()
             .callback(renderAll)
             .dimension(avgDelay)
             .group(avgDelays)
+            .colWidth(3)
             .x(d3.scaleLinear()
                 .domain([minDelay / 60 , 1+ (maxDelay / 60)])
                 .rangeRound([0, 300])),
-
 
         barChart()
             .callback(renderAll)
             .dimension(date)
             .group(dates)
             .round(d3.timeDay.round)
+            .colWidth(30)
             .x(d3.scaleTime()
                 .domain([minDate, maxDate])
-                .rangeRound([0, 10 * 90]))
+                .rangeRound([0, 900]))
 
     ];
 

@@ -15,6 +15,7 @@ export default function barChart() {
     let round;
     let gBrush;
     let callback;
+    let colWidth;
 
     function chart(div) {
         const width = x.range()[1];
@@ -110,7 +111,7 @@ export default function barChart() {
             let d;
             while (++i < n) {
                 d = groups[i];
-                path.push('M', x(d.key), ',', height, 'V', y(d.value), 'h9V', height);
+                path.push('M', x(d.key), ',', height, 'V', y(d.value), `h${colWidth-1}V`, height);
             }
             return path.join('');
         }
@@ -194,7 +195,12 @@ export default function barChart() {
     chart.callback = function(_) {
         callback = _;
         return chart;
-    }
+    };
+
+    chart.colWidth = function(_) {
+        colWidth = _;
+        return chart;
+    };
 
     chart.x = function (_) {
         if (!arguments.length) return x;
