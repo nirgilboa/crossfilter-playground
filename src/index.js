@@ -1,13 +1,18 @@
 import * as d3 from 'd3';
 import crossfilter from 'crossfilter';
 import barChart from './bar.js';
+import 'jquery';
+import Popper from 'popper.js';
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './css/index.css';
+
 
 /* global d3 crossfilter reset */
 
 // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
 d3.json('data/trips_2017_10.json', (error, trips) => {
     console.log(trips.length);
-
     // Various formatters.
     const formatNumber = d3.format(',d');
 

@@ -18,12 +18,12 @@ module.exports = {
                     //    loader: 'ng-annotate-loader'
                     //},
                     {
-                        loader : 'babel-loader',
+                        loader: 'babel-loader',
                         options: {
                             presets: ['env']
                         }
                     }
-                    ]
+                ]
             },
             {
                 test: /\.html$/,
@@ -54,15 +54,20 @@ module.exports = {
                     loader: 'sass-loader' // compiles SASS to CSS
                 }]
             },
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader']
+            }
+
         ]
     },
     plugins: [
-        // new webpack.ProvidePlugin({
-        //     $: "jquery",
-        //     jQuery: "jquery",
-        //     Popper: 'popper.js',
-        // }),
-       // new webpack.optimize.UglifyJsPlugin()
+        new webpack.ProvidePlugin({
+            $: "jquery",
+            jQuery: "jquery",
+            Popper: 'popper.js',
+        }),
+        // new webpack.optimize.UglifyJsPlugin()
     ]
 };
 
