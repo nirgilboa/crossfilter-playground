@@ -174,3 +174,4 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
         });
     }
 });
+
