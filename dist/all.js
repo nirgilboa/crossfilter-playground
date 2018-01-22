@@ -9444,6 +9444,10 @@ var _crossfilter = __webpack_require__(463);
 
 var _crossfilter2 = _interopRequireDefault(_crossfilter);
 
+var _bar = __webpack_require__(465);
+
+var _bar2 = _interopRequireDefault(_bar);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
@@ -9509,7 +9513,7 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
     });
 
     // window.avgDelay = avgDelay;
-    var charts = [barChart().dimension(hour).group(hours).x(d3.scaleLinear().domain([0, 24]).rangeRound([0, 300])), barChart().dimension(weekDay).group(weekDays).x(d3.scaleLinear().domain([0, 10]).rangeRound([0, 170])), barChart().dimension(avgDelay).group(avgDelays).x(d3.scaleLinear().domain([minDelay / 60, 1 + maxDelay / 60]).rangeRound([0, 300])), barChart().dimension(date).group(dates).round(d3.timeDay.round).x(d3.scaleTime().domain([minDate, maxDate]).rangeRound([0, 10 * 90]))];
+    var charts = [(0, _bar2.default)().callback(renderAll).dimension(hour).group(hours).x(d3.scaleLinear().domain([0, 24]).rangeRound([0, 300])), (0, _bar2.default)().callback(renderAll).dimension(weekDay).group(weekDays).x(d3.scaleLinear().domain([0, 10]).rangeRound([0, 170])), (0, _bar2.default)().callback(renderAll).dimension(avgDelay).group(avgDelays).x(d3.scaleLinear().domain([minDelay / 60, 1 + maxDelay / 60]).rangeRound([0, 300])), (0, _bar2.default)().callback(renderAll).dimension(date).group(dates).round(d3.timeDay.round).x(d3.scaleTime().domain([minDate, maxDate]).rangeRound([0, 10 * 90]))];
 
     // Given our array of charts, which we assume are in the same order as the
     // .chart elements in the DOM, bind the charts to the DOM and render them.
@@ -9588,207 +9592,13 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
             flightEnter.append('div').attr('class', 'delay').classed('early', function (d) {
                 return d.x_avg_delay_arrival < 0;
             }).text(function (d) {
-                return formatChange(d.x_avg_delay_arrival) + ' min.';
+                return formatChange(d.x_avg_delay_arrival / 60) + ' min.';
             });
 
             flightEnter.merge(flight);
 
             flight.order();
         });
-    }
-
-    function barChart() {
-        if (!barChart.id) barChart.id = 0;
-
-        var margin = { top: 10, right: 13, bottom: 20, left: 10 };
-        var x = void 0;
-        var y = d3.scaleLinear().range([100, 0]);
-        var id = barChart.id++;
-        var axis = d3.axisBottom();
-        var brush = d3.brushX();
-        var brushDirty = void 0;
-        var dimension = void 0;
-        var group = void 0;
-        var round = void 0;
-        var gBrush = void 0;
-
-        function chart(div) {
-            var width = x.range()[1];
-            var height = y.range()[0];
-
-            brush.extent([[0, 0], [width, height]]);
-
-            y.domain([0, group.top(1)[0].value]);
-
-            div.each(function () {
-                var div = d3.select(this);
-                var g = div.select('g');
-
-                // Create the skeletal chart.
-                if (g.empty()) {
-                    div.select('.title').append('a').attr('href', 'javascript:reset(' + id + ')').attr('class', 'reset').text('reset').style('display', 'none');
-
-                    g = div.append('svg').attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom).append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-                    g.append('clipPath').attr('id', 'clip-' + id).append('rect').attr('width', width).attr('height', height);
-
-                    g.selectAll('.bar').data(['background', 'foreground']).enter().append('path').attr('class', function (d) {
-                        return d + ' bar';
-                    }).datum(group.all());
-
-                    g.selectAll('.foreground.bar').attr('clip-path', 'url(#clip-' + id + ')');
-
-                    g.append('g').attr('class', 'axis').attr('transform', 'translate(0,' + height + ')').call(axis);
-
-                    // Initialize the brush component with pretty resize handles.
-                    gBrush = g.append('g').attr('class', 'brush').call(brush);
-
-                    gBrush.selectAll('.handle--custom').data([{ type: 'w' }, { type: 'e' }]).enter().append('path').attr('class', 'brush-handle').attr('cursor', 'ew-resize').attr('d', resizePath).style('display', 'none');
-                }
-
-                // Only redraw the brush if set externally.
-                if (brushDirty !== false) {
-                    var filterVal = brushDirty;
-                    brushDirty = false;
-
-                    div.select('.title a').style('display', d3.brushSelection(div) ? null : 'none');
-
-                    if (!filterVal) {
-                        g.call(brush);
-
-                        g.selectAll('#clip-' + id + ' rect').attr('x', 0).attr('width', width);
-
-                        g.selectAll('.brush-handle').style('display', 'none');
-                        renderAll();
-                    } else {
-                        var range = filterVal.map(x);
-                        brush.move(gBrush, range);
-                    }
-                }
-
-                g.selectAll('.bar').attr('d', barPath);
-            });
-
-            function barPath(groups) {
-                var path = [];
-                var i = -1;
-                var n = groups.length;
-                var d = void 0;
-                while (++i < n) {
-                    d = groups[i];
-                    path.push('M', x(d.key), ',', height, 'V', y(d.value), 'h9V', height);
-                }
-                return path.join('');
-            }
-
-            function resizePath(d) {
-                var e = +(d.type === 'e');
-                var x = e ? 1 : -1;
-                var y = height / 3;
-                return 'M' + 0.5 * x + ',' + y + 'A6,6 0 0 ' + e + ' ' + 6.5 * x + ',' + (y + 6) + 'V' + (2 * y - 6) + 'A6,6 0 0 ' + e + ' ' + 0.5 * x + ',' + 2 * y + 'ZM' + 2.5 * x + ',' + (y + 8) + 'V' + (2 * y - 8) + 'M' + 4.5 * x + ',' + (y + 8) + 'V' + (2 * y - 8);
-            }
-        }
-
-        brush.on('start.chart', function () {
-            var div = d3.select(this.parentNode.parentNode.parentNode);
-            div.select('.title a').style('display', null);
-        });
-
-        brush.on('brush.chart', function () {
-            var g = d3.select(this.parentNode);
-            var brushRange = d3.event.selection || d3.brushSelection(this); // attempt to read brush range
-            var xRange = x && x.range(); // attempt to read range from x scale
-            var activeRange = brushRange || xRange; // default to x range if no brush range available
-
-            var hasRange = activeRange && activeRange.length === 2 && !isNaN(activeRange[0]) && !isNaN(activeRange[1]);
-
-            if (!hasRange) return; // quit early if we don't have a valid range
-
-            // calculate current brush extents using x scale
-            var extents = activeRange.map(x.invert);
-
-            // if rounding fn supplied, then snap to rounded extents
-            // and move brush rect to reflect rounded range bounds if it was set by user interaction
-            if (round) {
-                extents = extents.map(round);
-                activeRange = extents.map(x);
-
-                if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
-                    d3.select(this).call(brush.move, activeRange);
-                }
-            }
-
-            // move brush handles to start and end of range
-            g.selectAll('.brush-handle').style('display', null).attr('transform', function (d, i) {
-                return 'translate(' + activeRange[i] + ', 0)';
-            });
-
-            // resize sliding window to reflect updated range
-            g.select('#clip-' + id + ' rect').attr('x', activeRange[0]).attr('width', activeRange[1] - activeRange[0]);
-
-            // filter the active dimension to the range extents
-            dimension.filterRange(extents);
-
-            // re-render the other charts accordingly
-            renderAll();
-        });
-
-        brush.on('end.chart', function () {
-            // reset corresponding filter if the brush selection was cleared
-            // (e.g. user "clicked off" the active range)
-            if (!d3.brushSelection(this)) {
-                reset(id);
-            }
-        });
-
-        chart.margin = function (_) {
-            if (!arguments.length) return margin;
-            margin = _;
-            return chart;
-        };
-
-        chart.x = function (_) {
-            if (!arguments.length) return x;
-            x = _;
-            axis.scale(x);
-            return chart;
-        };
-
-        chart.y = function (_) {
-            if (!arguments.length) return y;
-            y = _;
-            return chart;
-        };
-
-        chart.dimension = function (_) {
-            if (!arguments.length) return dimension;
-            dimension = _;
-            return chart;
-        };
-
-        chart.filter = function (_) {
-            if (!_) dimension.filterAll();
-            brushDirty = _;
-            return chart;
-        };
-
-        chart.group = function (_) {
-            if (!arguments.length) return group;
-            group = _;
-            return chart;
-        };
-
-        chart.round = function (_) {
-            if (!arguments.length) return round;
-            round = _;
-            return chart;
-        };
-
-        chart.gBrush = function () {
-            return gBrush;
-        };
-
-        return chart;
     }
 });
 
@@ -24752,6 +24562,228 @@ function crossfilter_capacity(w) {
 }
 })(typeof exports !== 'undefined' && exports || this);
 
+
+/***/ }),
+/* 465 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = barChart;
+
+var _d = __webpack_require__(172);
+
+var d3 = _interopRequireWildcard(_d);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function barChart() {
+    if (!barChart.id) barChart.id = 0;
+
+    var margin = { top: 10, right: 13, bottom: 20, left: 10 };
+    var x = void 0;
+    var y = d3.scaleLinear().range([100, 0]);
+    var id = barChart.id++;
+    var axis = d3.axisBottom();
+    var brush = d3.brushX();
+    var brushDirty = void 0;
+    var dimension = void 0;
+    var group = void 0;
+    var round = void 0;
+    var gBrush = void 0;
+    var callback = void 0;
+
+    function chart(div) {
+        var width = x.range()[1];
+        var height = y.range()[0];
+
+        brush.extent([[0, 0], [width, height]]);
+
+        y.domain([0, group.top(1)[0].value]);
+
+        div.each(function () {
+            var div = d3.select(this);
+            var g = div.select('g');
+
+            // Create the skeletal chart.
+            if (g.empty()) {
+                div.select('.title').append('a').attr('href', 'javascript:reset(' + id + ')').attr('class', 'reset').text('reset').style('display', 'none');
+
+                g = div.append('svg').attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom).append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+                g.append('clipPath').attr('id', 'clip-' + id).append('rect').attr('width', width).attr('height', height);
+
+                g.selectAll('.bar').data(['background', 'foreground']).enter().append('path').attr('class', function (d) {
+                    return d + ' bar';
+                }).datum(group.all());
+
+                g.selectAll('.foreground.bar').attr('clip-path', 'url(#clip-' + id + ')');
+
+                g.append('g').attr('class', 'axis').attr('transform', 'translate(0,' + height + ')').call(axis);
+
+                // Initialize the brush component with pretty resize handles.
+                gBrush = g.append('g').attr('class', 'brush').call(brush);
+
+                gBrush.selectAll('.handle--custom').data([{ type: 'w' }, { type: 'e' }]).enter().append('path').attr('class', 'brush-handle').attr('cursor', 'ew-resize').attr('d', resizePath).style('display', 'none');
+            }
+
+            // Only redraw the brush if set externally.
+            if (brushDirty !== false) {
+                var filterVal = brushDirty;
+                brushDirty = false;
+
+                div.select('.title a').style('display', d3.brushSelection(div) ? null : 'none');
+
+                if (!filterVal) {
+                    g.call(brush);
+
+                    g.selectAll('#clip-' + id + ' rect').attr('x', 0).attr('width', width);
+
+                    g.selectAll('.brush-handle').style('display', 'none');
+                    if (callback) {
+                        callback();
+                    }
+                } else {
+                    var range = filterVal.map(x);
+                    brush.move(gBrush, range);
+                }
+            }
+
+            g.selectAll('.bar').attr('d', barPath);
+        });
+
+        function barPath(groups) {
+            var path = [];
+            var i = -1;
+            var n = groups.length;
+            var d = void 0;
+            while (++i < n) {
+                d = groups[i];
+                path.push('M', x(d.key), ',', height, 'V', y(d.value), 'h9V', height);
+            }
+            return path.join('');
+        }
+
+        function resizePath(d) {
+            var e = +(d.type === 'e');
+            var x = e ? 1 : -1;
+            var y = height / 3;
+            return 'M' + 0.5 * x + ',' + y + 'A6,6 0 0 ' + e + ' ' + 6.5 * x + ',' + (y + 6) + 'V' + (2 * y - 6) + 'A6,6 0 0 ' + e + ' ' + 0.5 * x + ',' + 2 * y + 'ZM' + 2.5 * x + ',' + (y + 8) + 'V' + (2 * y - 8) + 'M' + 4.5 * x + ',' + (y + 8) + 'V' + (2 * y - 8);
+        }
+    }
+
+    brush.on('start.chart', function () {
+        var div = d3.select(this.parentNode.parentNode.parentNode);
+        div.select('.title a').style('display', null);
+    });
+
+    brush.on('brush.chart', function () {
+        var g = d3.select(this.parentNode);
+        var brushRange = d3.event.selection || d3.brushSelection(this); // attempt to read brush range
+        var xRange = x && x.range(); // attempt to read range from x scale
+        var activeRange = brushRange || xRange; // default to x range if no brush range available
+
+        var hasRange = activeRange && activeRange.length === 2 && !isNaN(activeRange[0]) && !isNaN(activeRange[1]);
+
+        if (!hasRange) return; // quit early if we don't have a valid range
+
+        // calculate current brush extents using x scale
+        var extents = activeRange.map(x.invert);
+
+        // if rounding fn supplied, then snap to rounded extents
+        // and move brush rect to reflect rounded range bounds if it was set by user interaction
+        if (round) {
+            extents = extents.map(round);
+            activeRange = extents.map(x);
+
+            if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
+                d3.select(this).call(brush.move, activeRange);
+            }
+        }
+
+        // move brush handles to start and end of range
+        g.selectAll('.brush-handle').style('display', null).attr('transform', function (d, i) {
+            return 'translate(' + activeRange[i] + ', 0)';
+        });
+
+        // resize sliding window to reflect updated range
+        g.select('#clip-' + id + ' rect').attr('x', activeRange[0]).attr('width', activeRange[1] - activeRange[0]);
+
+        // filter the active dimension to the range extents
+        dimension.filterRange(extents);
+
+        // re-render the other charts accordingly
+        if (callback) {
+            callback();
+        }
+    });
+
+    brush.on('end.chart', function () {
+        // reset corresponding filter if the brush selection was cleared
+        // (e.g. user "clicked off" the active range)
+        if (!d3.brushSelection(this)) {
+            reset(id);
+        }
+    });
+
+    chart.margin = function (_) {
+        if (!arguments.length) return margin;
+        margin = _;
+        return chart;
+    };
+
+    chart.callback = function (_) {
+        callback = _;
+        return chart;
+    };
+
+    chart.x = function (_) {
+        if (!arguments.length) return x;
+        x = _;
+        axis.scale(x);
+        return chart;
+    };
+
+    chart.y = function (_) {
+        if (!arguments.length) return y;
+        y = _;
+        return chart;
+    };
+
+    chart.dimension = function (_) {
+        if (!arguments.length) return dimension;
+        dimension = _;
+        return chart;
+    };
+
+    chart.filter = function (_) {
+        if (!_) dimension.filterAll();
+        brushDirty = _;
+        return chart;
+    };
+
+    chart.group = function (_) {
+        if (!arguments.length) return group;
+        group = _;
+        return chart;
+    };
+
+    chart.round = function (_) {
+        if (!arguments.length) return round;
+        round = _;
+        return chart;
+    };
+
+    chart.gBrush = function () {
+        return gBrush;
+    };
+
+    return chart;
+}
 
 /***/ })
 /******/ ]);
