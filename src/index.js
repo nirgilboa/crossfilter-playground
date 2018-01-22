@@ -160,7 +160,7 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
             flightEnter.append('div')
                 .attr('class', 'delay')
                 .classed('early', d => d.x_avg_delay_arrival < 0)
-                .text(d => `${formatChange(d.x_avg_delay_arrival)} min.`);
+                .text(d => `${formatChange(d.x_avg_delay_arrival / 60)} min.`);
 
             flightEnter.merge(flight);
 
