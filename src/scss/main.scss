@@ -9,6 +9,11 @@ body {
     min-height: 300px;
 }
 
+.chart-header {
+    @extend .card-header;
+    @extend .bg-danger;
+}
+
 .chart {
 
 }
