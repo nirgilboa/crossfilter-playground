@@ -22762,7 +22762,11 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
     var formatChange = d3.format('+,d');
     var formatDate = d3.timeFormat('%d/%m/%Y');
     var formatTime = d3.timeFormat('%I:%M %p');
+    var DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 
+    var formatDayOfWeek = function formatDayOfWeek(dow) {
+        return DAYS_OF_WEEK[dow];
+    };
     // A nest operator, for grouping the flight list.
     var nestByDate = d3.nest().key(function (d) {
         return d3.timeDay(d.date);
@@ -22884,13 +22888,13 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
             });
 
             flightEnter.append('td').text(function (d) {
-                return '' + formatNumber(d.x_week_day_local);
+                return '' + formatDayOfWeek(d.x_week_day_local);
             });
 
             flightEnter.append('td').classed('early', function (d) {
                 return d.x_avg_delay_arrival < 0;
             }).text(function (d) {
-                return formatChange(d.x_avg_delay_arrival / 60) + ' min.';
+                return '' + formatChange(d.x_avg_delay_arrival / 60) + ' ' + 'דקות';
             });
 
             flightEnter.merge(flight);

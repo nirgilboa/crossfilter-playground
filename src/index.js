@@ -18,7 +18,17 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
     const formatChange = d3.format('+,d');
     const formatDate = d3.timeFormat('%d/%m/%Y');
     const formatTime = d3.timeFormat('%I:%M %p');
+    const DAYS_OF_WEEK = [
+        'ראשון',
+        'שני',
+        'שלישי',
+        'רביעי',
+        'חמישי',
+        'שישי',
+        'שבת',
+    ];
 
+    const formatDayOfWeek = dow => DAYS_OF_WEEK[dow];
     // A nest operator, for grouping the flight list.
     const nestByDate = d3.nest()
         .key(d => d3.timeDay(d.date));
@@ -163,11 +173,11 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
                 .text(d => d.x_hour_local);
 
             flightEnter.append('td')
-                .text(d => `${formatNumber(d.x_week_day_local)}`);
+                .text(d => `${formatDayOfWeek(d.x_week_day_local)}`);
 
             flightEnter.append('td')
                 .classed('early', d => d.x_avg_delay_arrival < 0)
-                .text(d => `${formatChange(d.x_avg_delay_arrival / 60)} min.`);
+                .text(d => `${formatChange(d.x_avg_delay_arrival / 60)}` + ' ' + 'דקות');
 
             flightEnter.merge(flight);
 
