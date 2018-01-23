@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {
     entry: './src/index.js',
@@ -36,24 +37,26 @@ module.exports = {
             },
             {
                 test: /\.(scss)$/,
-                use: [{
-                    loader: 'style-loader', // inject CSS to page
-                }, {
-                    loader: 'css-loader', // translates CSS into CommonJS modules
-                }, {
-                    loader: 'postcss-loader', // Run post css actions
-                    options: {
-                        plugins: function () { // post css plugins, can be exported to postcss.config.js
-                            return [
-                                require('precss'),
-                                require('autoprefixer')
-                                //require('css-flip'),
-                            ];
+                use: ExtractTextPlugin.extract({
+                    fallback: 'style-loader',
+                    use: [{
+                        loader: 'css-loader', // translates CSS into CommonJS modules
+                    }, {
+                        loader: 'postcss-loader', // Run post css actions
+                        options: {
+                            plugins: function () { // post css plugins, can be exported to postcss.config.js
+                                return [
+                                    require('precss'),
+                                    require('autoprefixer')
+                                    //require('css-flip'),
+                                ];
+                            }
                         }
-                    }
-                }, {
-                    loader: 'sass-loader' // compiles SASS to CSS
-                }]
+                    }, {
+                        loader: 'sass-loader' // compiles SASS to CSS
+                    }]
+                })
+
             },
             {
                 test: /\.css$/,
@@ -68,6 +71,7 @@ module.exports = {
             jQuery: "jquery",
             Popper: 'popper.js',
         }),
+        new ExtractTextPlugin("cf.css")
         // new webpack.optimize.UglifyJsPlugin()
     ]
 };
