@@ -56,9 +56,7 @@ module.exports = {
                         }
                     },
                     {
-                        loader: 'shell-loader', options: {
-                            script: path.resolve('./css-flip-wrapper.sh')
-                        }
+                        loader: 'css-flip-loader'
                     }
                     ,
                     {
