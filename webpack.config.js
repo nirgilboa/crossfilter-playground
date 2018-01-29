@@ -37,9 +37,11 @@ module.exports = {
             },
             {
                 test: /\.(scss)$/,
-                use: ExtractTextPlugin.extract({
-                    fallback: 'style-loader',
-                    use: [{
+                use: [
+                    {
+                        loader: 'style-loader',
+                    },
+                    {
                         loader: 'css-loader', // translates CSS into CommonJS modules
                     }, {
                         loader: 'postcss-loader', // Run post css actions
@@ -52,17 +54,21 @@ module.exports = {
                                 ];
                             }
                         }
-                    }, {
+                    },
+                    {
+                        loader: 'shell-loader', options: {
+                            script: path.resolve('./css-flip-wrapper.sh')
+                        }
+                    }
+                    ,
+                    {
                         loader: 'sass-loader' // compiles SASS to CSS
-                    }]
-                })
-
+                    },
+                    //     {
+                    //
+                    // }
+                ]
             },
-            {
-                test: /\.css$/,
-                use: ['style-loader', 'css-loader']
-            }
-
         ]
     },
     plugins: [
