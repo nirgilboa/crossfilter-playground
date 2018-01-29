@@ -12,7 +12,9 @@ body {
 
 .chart-header {
     @extend .card-header;
-    @extend .bg-danger;
+    background: steelblue;
+    padding: 0.1rem 1.25rem;
+    color: white;
 }
 
 .chart {

@@ -4708,14 +4708,12 @@ button.bg-warning:hover,
 button.bg-warning:focus {
   background-color: #d39e00 !important; }
 
-.bg-danger, .chart-header {
+.bg-danger {
   background-color: #dc3545 !important; }
 
-a.bg-danger:hover, a.chart-header:hover, a.bg-danger:focus, a.chart-header:focus,
+a.bg-danger:hover, a.bg-danger:focus,
 button.bg-danger:hover,
-button.chart-header:hover,
-button.bg-danger:focus,
-button.chart-header:focus {
+button.bg-danger:focus {
   background-color: #bd2130 !important; }
 
 .bg-light {
@@ -6890,6 +6888,11 @@ body {
 
 .chart-wrapper {
   min-height: 300px; }
+
+.chart-header {
+  background: steelblue;
+  padding: 0.1rem 1.25rem;
+  color: white; }
 
 .background.bar {
   fill: #ccc; }
