@@ -42468,6 +42468,7 @@ function barChart() {
             if (!domainCount) {
                 domainCount = x.domain()[1] - x.domain()[0];
             }
+            axis.scale(x.copy().range([0, width]));
             colWidth = width / domainCount;
         }
 
@@ -42559,7 +42560,6 @@ function barChart() {
     chart.x = function (_) {
         if (!arguments.length) return x;
         x = _;
-        axis.scale(x);
         return chart;
     };
 
