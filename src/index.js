@@ -158,29 +158,29 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
         const tripsToShow = avgDelay.top(40);
         div.each(function () {
 
-            const flight = div.selectAll('.trip')
+            const trip = div.selectAll('.trip')
                 .data(tripsToShow);
 
-            flight.exit().remove();
+            trip.exit().remove();
 
-            const flightEnter = flight.enter().append('tr').attr("class","trip");
+            const tripEnter = trip.enter().append('tr').attr("class","trip");
 
-            flightEnter.append('td')
+            tripEnter.append('td')
                 .text(d => formatDate(d.date));
 
-            flightEnter.append('td')
+            tripEnter.append('td')
                 .text(d => d.x_hour_local);
 
-            flightEnter.append('td')
+            tripEnter.append('td')
                 .text(d => `${formatDayOfWeek(d.x_week_day_local)}`);
 
-            flightEnter.append('td')
+            tripEnter.append('td')
                 .classed('early', d => d.x_avg_delay_arrival < 0)
                 .text(d => `${formatChange(d.x_avg_delay_arrival / 60)}` + ' ' + 'דקות');
 
-            flightEnter.merge(flight);
+            tripEnter.merge(trip);
 
-            flight.order();
+            trip.order();
         });
     }
 });
