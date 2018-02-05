@@ -16,10 +16,12 @@ export default function barChart() {
     let gBrush;
     let callback;
     let colWidth;
+    let width;
+    let height;
+    let domainCount;
 
     function chart(div) {
-        const width = x.range()[1];
-        const height = y.range()[0];
+        refreshSize(div);
 
         brush.extent([[0, 0], [width, height]]);
 
@@ -104,6 +106,15 @@ export default function barChart() {
             g.selectAll('.bar').attr('d', barPath);
         });
 
+        function refreshSize(div) {
+            width = div.node().getBoundingClientRect().width - 40;
+            height = y.range()[0];
+            if (!domainCount) {
+                domainCount = (x.domain()[1] - x.domain()[0]);
+            }
+            colWidth = width / domainCount;
+        }
+
         function barPath(groups) {
             const path = [];
             let i = -1;
@@ -111,7 +122,7 @@ export default function barChart() {
             let d;
             while (++i < n) {
                 d = groups[i];
-                path.push('M', x(d.key), ',', height, 'V', y(d.value), `h${colWidth-1}V`, height);
+                path.push('M', x(d.key) * width, ',', height, 'V', y(d.value), `h${colWidth-1}V`, height);
             }
             return path.join('');
         }
@@ -197,11 +208,6 @@ export default function barChart() {
         return chart;
     };
 
-    chart.colWidth = function(_) {
-        colWidth = _;
-        return chart;
-    };
-
     chart.x = function (_) {
         if (!arguments.length) return x;
         x = _;
@@ -236,6 +242,12 @@ export default function barChart() {
     chart.round = function (_) {
         if (!arguments.length) return round;
         round = _;
+        return chart;
+    };
+
+    chart.domainCount = function (_) {
+        if (!arguments.length) return domainCount;
+        domainCount = _;
         return chart;
     };
 
