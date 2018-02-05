@@ -12,9 +12,13 @@ body {
 
 .chart-header {
     @extend .card-header;
-    background: steelblue;
+    background: lightgray;
     padding: 0.1rem 1.25rem;
-    color: white;
+    font-weight: 700;
+}
+
+.flight-list {
+    //font-size 0.5rem;
 }
 
 .chart {
