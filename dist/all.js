@@ -24629,7 +24629,7 @@ function transform(node) {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-
+/* WEBPACK VAR INJECTION */(function($) {
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -24663,7 +24663,6 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
 d3.json('data/trips_2017_10.json', function (error, trips) {
-    console.log(trips.length);
     // Various formatters.
     var formatNumber = d3.format(',d');
 
@@ -24750,6 +24749,11 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
         d3.select('#active').text(formatNumber(all.value()));
     }
 
+    $(window).resize(function () {
+        $('.chart svg').remove();
+        renderAll();
+    });
+
     // Like d3.timeFormat, but faster.
     function parseDate(d) {
         var _d$split$map = d.split("-").map(function (x) {
@@ -24810,6 +24814,7 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
         });
     }
 });
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(90)))
 
 /***/ }),
 /* 175 */
@@ -42458,7 +42463,7 @@ function barChart() {
         });
 
         function refreshSize(div) {
-            width = div.node().getBoundingClientRect().width - 40;
+            width = div.node().getBoundingClientRect().width - margin.left - margin.right;
             height = y.range()[0];
             if (!domainCount) {
                 domainCount = x.domain()[1] - x.domain()[0];

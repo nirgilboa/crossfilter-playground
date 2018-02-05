@@ -8,7 +8,6 @@ module.exports = function(source) {
     var callback = this.async();
     var options = loaderUtils.getOptions(this);
     var tmpFile = path.join(os.tmpdir(), "file_" + new Date().getTime() + ".css");
-    console.log(tmpFile);
     fs.writeFileSync(tmpFile, source);
     var cmd = "css-flip" + " " + tmpFile;
     var command = exec(cmd, function(err, result) {

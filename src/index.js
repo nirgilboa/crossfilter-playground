@@ -11,7 +11,6 @@ import './scss/main.scss';
 
 // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
 d3.json('data/trips_2017_10.json', (error, trips) => {
-    console.log(trips.length);
     // Various formatters.
     const formatNumber = d3.format(',d');
 
@@ -130,6 +129,11 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
         list.each(render);
         d3.select('#active').text(formatNumber(all.value()));
     }
+
+    $(window).resize(() => {
+        $('.chart svg').remove();
+        renderAll();
+    });
 
     // Like d3.timeFormat, but faster.
     function parseDate(d) {

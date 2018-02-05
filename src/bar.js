@@ -107,7 +107,7 @@ export default function barChart() {
         });
 
         function refreshSize(div) {
-            width = div.node().getBoundingClientRect().width - 40;
+            width = div.node().getBoundingClientRect().width - margin.left - margin.right;
             height = y.range()[0];
             if (!domainCount) {
                 domainCount = (x.domain()[1] - x.domain()[0]);
