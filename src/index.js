@@ -156,15 +156,14 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
     function tripList(div) {
 
         const tripsToShow = avgDelay.top(40);
-
         div.each(function () {
 
-            const flight = div.selectAll('.flight')
+            const flight = div.selectAll('tr')
                 .data(tripsToShow);
 
             flight.exit().remove();
 
-            const flightEnter = flight.enter().append('tr')
+            const flightEnter = flight.enter().append('tr');
 
             flightEnter.append('td')
                 .text(d => formatDate(d.date));
