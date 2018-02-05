@@ -116,7 +116,7 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
         .data(charts);
 
     // Render the initial lists.
-    const list = d3.selectAll('#flight-list')
+    const list = d3.selectAll('#trip-list')
         .data([tripList]);
 
     // Render the total.
@@ -158,12 +158,12 @@ d3.json('data/trips_2017_10.json', (error, trips) => {
         const tripsToShow = avgDelay.top(40);
         div.each(function () {
 
-            const flight = div.selectAll('tr')
+            const flight = div.selectAll('.trip')
                 .data(tripsToShow);
 
             flight.exit().remove();
 
-            const flightEnter = flight.enter().append('tr');
+            const flightEnter = flight.enter().append('tr').attr("class","trip");
 
             flightEnter.append('td')
                 .text(d => formatDate(d.date));

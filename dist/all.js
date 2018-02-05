@@ -22823,7 +22823,7 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
     var chart = d3.selectAll('.chart').data(charts);
 
     // Render the initial lists.
-    var list = d3.selectAll('#flight-list').data([tripList]);
+    var list = d3.selectAll('#trip-list').data([tripList]);
 
     // Render the total.
     d3.selectAll('#total').text(formatNumber(tripsCf.size()));
@@ -22872,11 +22872,11 @@ d3.json('data/trips_2017_10.json', function (error, trips) {
         var tripsToShow = avgDelay.top(40);
         div.each(function () {
 
-            var flight = div.selectAll('tr').data(tripsToShow);
+            var flight = div.selectAll('.trip').data(tripsToShow);
 
             flight.exit().remove();
 
-            var flightEnter = flight.enter().append('tr');
+            var flightEnter = flight.enter().append('tr').attr("class", "trip");
 
             flightEnter.append('td').text(function (d) {
                 return formatDate(d.date);
