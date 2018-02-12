@@ -7,7 +7,7 @@
     <title>רכבת פתוחה</title>
 </head>
 <body dir="rtl">
-<h1>רכבת פתוחה</h1>
+<h1>רכבת פתddוחה</h1>
 <h2>מחקר מסלולים</h2>
 <h4>
     <span id="totals">
@@ -18,6 +18,23 @@
         נסיעות
     </span>
 </h4>
+<div>
+    <form class="form-inline">
+        <div class="form-group mb-2">
+            <label for="start_date">
+            מתאריך
+            </label>
+            <input type="date" class="form-control" id="start_date">
+        </div>
+        <div class="form-group mb-2">
+            <label for="end_date">
+                עד תאריך
+            </label>
+            <input type="date" class="form-control" id="end_date">
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">הצג</button>
+    </form>
+</div>
 <div id="charts">
     <div class="row">
         <div class="chart-wrapper col-md-4 col-12">

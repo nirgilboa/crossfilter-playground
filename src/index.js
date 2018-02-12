@@ -7,10 +7,7 @@ import 'bootstrap';
 import './scss/main.scss';
 
 
-/* global d3 crossfilter reset */
-
-// (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
-d3.json('data/trips_2017_10.json', (error, trips) => {
+d3.json('http://otrain.org/api/v1/trips/compact/?start_date=1-10-2017&end_date=3-10-2017', (error, trips) => {
     // Various formatters.
     const formatNumber = d3.format(',d');
 
