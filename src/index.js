@@ -87,7 +87,8 @@ function showPage(start_date, end_date) {
                 .dimension(delayField.dim)
                 .group(delayField.group)
                 .x(d3.scaleLinear()
-                    .domain([minDelay / 60 , 1+ (maxDelay / 60)])));
+                    .domain([minDelay / 60 , 1+ (maxDelay / 60)]))
+                .domainCount(150));
 
         const charts = delayCharts.concat([
             barChart()
