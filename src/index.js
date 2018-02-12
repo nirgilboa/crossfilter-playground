@@ -58,17 +58,38 @@ function showPage(start_date, end_date) {
         // Sunday is zero
         const weekDay = tripsCf.dimension(d => d.x_week_day_local);
         const weekDays = weekDay.group();
+
+        const stationDim = tripsCf.dimension(d => d.samples_count);
+        const stationGroup = stationDim.group();
+        const maxStations = trips.map(x => x.samples_count).reduce((x, y) => Math.max(x, y));
+
+        const delayFieldsNames = ['x_last_delay_arrival', 'x_max_delay_arrival', 'x_avg_delay_arrival' ];
+        let delayFields = [];
         const minDelay = -300;
         const maxDelay = 600;
-        const avgDelay = tripsCf.dimension(d => d.x_avg_delay_arrival);
-        const avgDelays = avgDelay.group(d => {
-            let d2 = Math.max(minDelay, Math.min(maxDelay, d));
-            return Math.floor(d2 / 6) / 10
-        });
+        for (let delayFieldName of delayFieldsNames) {
+            let dim = tripsCf.dimension(d => d[delayFieldName]);
+            let group = dim.group(d => {
+                let d2 = Math.max(minDelay, Math.min(maxDelay, d));
+                return Math.floor(d2 / 6) / 10
+            });
+            delayFields.push({
+                dim: dim,
+                group: group,
+                fieldName: delayFieldName
+            });
+        }
 
-        // window.avgDelay = avgDelay;
-        const charts = [
 
+        const delayCharts = delayFields.map(delayField =>
+            barChart()
+                .callback(renderAll)
+                .dimension(delayField.dim)
+                .group(delayField.group)
+                .x(d3.scaleLinear()
+                    .domain([minDelay / 60 , 1+ (maxDelay / 60)])));
+
+        const charts = delayCharts.concat([
             barChart()
                 .callback(renderAll)
                 .dimension(hour)
@@ -85,10 +106,10 @@ function showPage(start_date, end_date) {
 
             barChart()
                 .callback(renderAll)
-                .dimension(avgDelay)
-                .group(avgDelays)
+                .dimension(stationDim)
+                .group(stationGroup)
                 .x(d3.scaleLinear()
-                    .domain([minDelay / 60 , 1+ (maxDelay / 60)])),
+                    .domain([0 , maxStations])),
 
             barChart()
                 .callback(renderAll)
@@ -100,7 +121,7 @@ function showPage(start_date, end_date) {
                 .domainCount(d3.scaleTime()
                     .domain([minDate, maxDate]).ticks(d3.timeDay.every(1)).length)
 
-        ];
+        ]);
 
         // Given our array of charts, which we assume are in the same order as the
         // .chart elements in the DOM, bind the charts to the DOM and render them.
@@ -153,7 +174,7 @@ function showPage(start_date, end_date) {
 
         function tripList(div) {
 
-            const tripsToShow = avgDelay.top(40);
+            const tripsToShow = delayFields[0].dim.top(40);
             div.each(function () {
 
                 const trip = div.selectAll('.trip')

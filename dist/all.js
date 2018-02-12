@@ -24712,18 +24712,67 @@ function showPage(start_date, end_date) {
             return d.x_week_day_local;
         });
         var weekDays = weekDay.group();
-        var minDelay = -300;
-        var maxDelay = 600;
-        var avgDelay = tripsCf.dimension(function (d) {
-            return d.x_avg_delay_arrival;
+
+        var stationDim = tripsCf.dimension(function (d) {
+            return d.samples_count;
         });
-        var avgDelays = avgDelay.group(function (d) {
-            var d2 = Math.max(minDelay, Math.min(maxDelay, d));
-            return Math.floor(d2 / 6) / 10;
+        var stationGroup = stationDim.group();
+        var maxStations = trips.map(function (x) {
+            return x.samples_count;
+        }).reduce(function (x, y) {
+            return Math.max(x, y);
         });
 
-        // window.avgDelay = avgDelay;
-        var charts = [(0, _bar2.default)().callback(renderAll).dimension(hour).group(hours).x(d3.scaleLinear().domain([0, 24])), (0, _bar2.default)().callback(renderAll).dimension(weekDay).group(weekDays).x(d3.scaleLinear().domain([0, 7])), (0, _bar2.default)().callback(renderAll).dimension(avgDelay).group(avgDelays).x(d3.scaleLinear().domain([minDelay / 60, 1 + maxDelay / 60])), (0, _bar2.default)().callback(renderAll).dimension(date).group(dates).round(d3.timeDay.round).x(d3.scaleTime().domain([minDate, maxDate])).domainCount(d3.scaleTime().domain([minDate, maxDate]).ticks(d3.timeDay.every(1)).length)];
+        var delayFieldsNames = ['x_last_delay_arrival', 'x_max_delay_arrival', 'x_avg_delay_arrival'];
+        var delayFields = [];
+        var minDelay = -300;
+        var maxDelay = 600;
+
+        var _loop = function _loop(delayFieldName) {
+            var dim = tripsCf.dimension(function (d) {
+                return d[delayFieldName];
+            });
+            var group = dim.group(function (d) {
+                var d2 = Math.max(minDelay, Math.min(maxDelay, d));
+                return Math.floor(d2 / 6) / 10;
+            });
+            delayFields.push({
+                dim: dim,
+                group: group,
+                fieldName: delayFieldName
+            });
+        };
+
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = delayFieldsNames[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var delayFieldName = _step.value;
+
+                _loop(delayFieldName);
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                    _iterator.return();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
+        }
+
+        var delayCharts = delayFields.map(function (delayField) {
+            return (0, _bar2.default)().callback(renderAll).dimension(delayField.dim).group(delayField.group).x(d3.scaleLinear().domain([minDelay / 60, 1 + maxDelay / 60]));
+        });
+
+        var charts = delayCharts.concat([(0, _bar2.default)().callback(renderAll).dimension(hour).group(hours).x(d3.scaleLinear().domain([0, 24])), (0, _bar2.default)().callback(renderAll).dimension(weekDay).group(weekDays).x(d3.scaleLinear().domain([0, 7])), (0, _bar2.default)().callback(renderAll).dimension(stationDim).group(stationGroup).x(d3.scaleLinear().domain([0, maxStations])), (0, _bar2.default)().callback(renderAll).dimension(date).group(dates).round(d3.timeDay.round).x(d3.scaleTime().domain([minDate, maxDate])).domainCount(d3.scaleTime().domain([minDate, maxDate]).ticks(d3.timeDay.every(1)).length)]);
 
         // Given our array of charts, which we assume are in the same order as the
         // .chart elements in the DOM, bind the charts to the DOM and render them.
@@ -24782,7 +24831,7 @@ function showPage(start_date, end_date) {
 
         function tripList(div) {
 
-            var tripsToShow = avgDelay.top(40);
+            var tripsToShow = delayFields[0].dim.top(40);
             div.each(function () {
 
                 var trip = div.selectAll('.trip').data(tripsToShow);
