@@ -8,10 +8,10 @@ import './scss/main.scss';
 import './fa/fontawesome-all.js';
 
 function getJson(startDate, endDate) {
-    let p = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         let lastStartDate = localStorage.getItem("lastCallStartData");
         let lastEndDate = localStorage.getItem("lastCallEndData");
-        if (lastStartDate == startDate && lastEndDate == endDate) {
+        if (lastStartDate === startDate && lastEndDate === endDate) {
             let lastTrips = localStorage.getItem("lastCallTrips");
             if (lastTrips) {
                 resolve(JSON.parse(lastTrips));
@@ -23,11 +23,18 @@ function getJson(startDate, endDate) {
             localStorage.setItem("lastCallEndData", endDate);
             localStorage.setItem("lastCallTrips", JSON.stringify(data));
             resolve(data);
-        });
+        }, hideWipShowError);
     });
-    return p;
 }
 
+function hideWipShowError(resp, textStatus, errorThrown) {
+    $("#wip").hide();
+    $("#error-text").text(
+        "שגיאה: "
+        + resp.status
+    );
+    $("#error-div").show();
+}
 
 function showPage(start_date, end_date) {
     let datesForm = $('#dates_form');
