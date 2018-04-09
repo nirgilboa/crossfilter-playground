@@ -109,12 +109,8 @@ export default function barChart() {
         function refreshSize(div) {
             width = div.node().getBoundingClientRect().width - margin.left - margin.right;
             height = y.range()[0];
-            if (!domainCount) {
-                domainCount = (x.domain()[1] - x.domain()[0]);
-            }
             axis.scale(x.copy().range([0, width]));
             colWidth = width / domainCount;
-
         }
 
         function barPath(groups) {
@@ -156,7 +152,9 @@ export default function barChart() {
         if (!hasRange) return; // quit early if we don't have a valid range
 
         // calculate current brush extents using x scale
-        let extents = activeRange.map(x.invert);
+        let extents = activeRange.map(x=>x/width).map(x.invert);
+        //let extents = activeRange.map(x.invert);
+        console.log(`extents = ${extents}`);
 
         // if rounding fn supplied, then snap to rounded extents
         // and move brush rect to reflect rounded range bounds if it was set by user interaction

@@ -1,11 +1,27 @@
 import * as d3 from 'd3';
+import bb from "billboard.js";
 import crossfilter from 'crossfilter';
-import barChart from './bar.js';
 import 'jquery';
 import Popper from 'popper.js';
 import 'bootstrap';
 import './scss/main.scss';
 import './fa/fontawesome-all.js';
+
+import {DelayField, DateField, StopsCountField, WeekDayField, HoursField} from './fields.js'
+
+function parseDate(d) {
+    let [year, month, day] = d.split("-").map(x => parseInt(x));
+    return new Date(year, month - 1, day);
+}
+
+
+function toMap(items, getter) {
+    let result = new Map();
+    for (let item of items) {
+        result.set(getter(item), item);
+    }
+    return result;
+}
 
 function getJson(startDate, endDate) {
     return new Promise((resolve, reject) => {
@@ -36,217 +52,98 @@ function hideWipShowError(resp, textStatus, errorThrown) {
     $("#error-div").show();
 }
 
-function showPage(start_date, end_date) {
+function showPage(startDate, endDate) {
     let datesForm = $('#dates_form');
-    datesForm.find('[name=start_date]').val(start_date);
-    datesForm.find('[name=end_date]').val(end_date);
+    datesForm.find('[name=start_date]').val(startDate);
+    datesForm.find('[name=end_date]').val(endDate);
     $("#charts").hide();
     $("#wip").show();
-    getJson(start_date, end_date).then(trips => {
+    getJson(startDate, endDate).then(trips => {
         $("#charts").show();
         $("#wip").hide();
-        window.setTimeout(() => renderCharts(trips), 0);
+        window.setTimeout(
+            () => renderCharts(trips),
+            0);
     });
 }
 
+
+
+class Manager {
+    constructor(trips) {
+        this.trips = trips;
+        this.cf = crossfilter(trips);
+        let all = this.cf.groupAll();
+    }
+
+    refreshCharts() {
+        for (let field of this.fields) {
+            field.applyFilter();
+        }
+
+        for (let field of this.fields) {
+            field.renderChart();
+        }
+    }
+    setFields(fields) {
+        this.fields = fields;
+        this.fieldsByCode = {};
+        for (let f of this.fields) {
+            this.fieldsByCode[f.code] = f;
+        }
+    }
+}
+
 function renderCharts(trips) {
-    // Various formatters.
-    const formatNumber = d3.format(',d');
-
-    const formatChange = d3.format('+,d');
-    const formatDate = d3.timeFormat('%d/%m/%Y');
-    const formatTime = d3.timeFormat('%I:%M %p');
-    const DAYS_OF_WEEK = [
-        'ראשון',
-        'שני',
-        'שלישי',
-        'רביעי',
-        'חמישי',
-        'שישי',
-        'שבת',
-    ];
-
-    const formatDayOfWeek = dow => DAYS_OF_WEEK[dow];
-    // A nest operator, for grouping the flight list.
-    const nestByDate = d3.nest()
-        .key(d => d3.timeDay(d.date));
-
-    let minDate = parseDate(trips[0].date);
-    let maxDate = parseDate(trips[0].date);
-
     // A little coercion, since the CSV is untyped.
     trips.forEach((d, i) => {
         d.index = i;
         d.date = parseDate(d.date);
-        if (d.date.getTime() > maxDate.getTime()) {
-            maxDate = d.date;
-        }
-        if (d.date.getTime() < minDate.getTime()) {
-            minDate = d.date;
-        }
     });
 
-    // Create the crossfilter for the relevant dimensions and groups.
-    const tripsCf = crossfilter(trips);
-
-    const all = tripsCf.groupAll();
-    const date = tripsCf.dimension(d => d.date);
-    const dates = date.group(d3.timeDay);
-    const hour = tripsCf.dimension(d => d.x_hour_local);
-    const hours = hour.group();
-    // Sunday is zero
-    const weekDay = tripsCf.dimension(d => d.x_week_day_local);
-    const weekDays = weekDay.group();
-
-    const stationDim = tripsCf.dimension(d => d.samples_count);
-    const stationGroup = stationDim.group();
-    const maxStations = trips.map(x => x.samples_count).reduce((x, y) => Math.max(x, y));
-
-    const delayFieldsNames = ['x_last_delay_arrival', 'x_max_delay_arrival', 'x_avg_delay_arrival'];
-    let delayFields = [];
-    const minDelay = -300;
-    const maxDelay = 600;
-    for (let delayFieldName of delayFieldsNames) {
-        let dim = tripsCf.dimension(d => d[delayFieldName]);
-        let group = dim.group(d => {
-            let d2 = Math.max(minDelay, Math.min(maxDelay, d));
-            return Math.floor(d2 / 6) / 10
-        });
-        delayFields.push({
-            dim: dim,
-            group: group,
-            fieldName: delayFieldName
-        });
+    let m = new Manager(trips);
+    window.m = m;
+    let fields = [];
+    for (let df of [
+        ['איחור בתחנה אחרונה', 'x_last_delay_arrival'],
+        ['איחור מקסימלי', 'x_max_delay_arrival'],
+        ['איחור ממוצע', 'x_avg_delay_arrival']
+        ]) {
+        fields.push(new DelayField(m, df[0], df[1]))
     }
-
-
-    const delayCharts = delayFields.map(delayField =>
-        barChart()
-            .callback(renderAll)
-            .dimension(delayField.dim)
-            .group(delayField.group)
-            .x(d3.scaleLinear()
-                .domain([minDelay / 60, 1 + (maxDelay / 60)]))
-            .domainCount(150));
-
-    const charts = delayCharts.concat([
-        barChart()
-            .callback(renderAll)
-            .dimension(hour)
-            .group(hours)
-            .x(d3.scaleLinear()
-                .domain([0, 24])),
-
-        barChart()
-            .callback(renderAll)
-            .dimension(weekDay)
-            .group(weekDays)
-            .x(d3.scaleLinear()
-                .domain([0, 7])),
-
-        barChart()
-            .callback(renderAll)
-            .dimension(stationDim)
-            .group(stationGroup)
-            .x(d3.scaleLinear()
-                .domain([0, maxStations])),
-
-        barChart()
-            .callback(renderAll)
-            .dimension(date)
-            .group(dates)
-            .round(d3.timeDay.round)
-            .x(d3.scaleTime()
-                .domain([minDate, maxDate]))
-            .domainCount(d3.scaleTime()
-                .domain([minDate, maxDate]).ticks(d3.timeDay.every(1)).length)
-
+    fields = fields.concat([
+         new HoursField(m, 'שעת יציאה', 'hour', d => d.x_hour_local),
+        // Sunday is zero
+         new WeekDayField(m, 'יום בשבוע', 'weekDay', d => d.x_week_day_local),
+         new StopsCountField(m, 'מספר תחנות','stopsCount', d => d.samples_count),
+    //     new DateField(m, 'תאריך','date', d => d3.timeDay(d.date)),
     ]);
 
-    // Given our array of charts, which we assume are in the same order as the
-    // .chart elements in the DOM, bind the charts to the DOM and render them.
-    // We also listen to the chart's brush events to update the display.c
-    const chart = d3.selectAll('.chart')
-        .data(charts);
+    m.setFields(fields);
 
-    // Render the initial lists.
-    const list = d3.selectAll('#trip-list')
-        .data([tripList]);
-
-    // Render the total.
-    d3.selectAll('#total')
-        .text(formatNumber(tripsCf.size()));
-
-    renderAll();
-
-    // Renders the specified chart or list.
-    function render(method) {
-        d3.select(this).call(method);
+    for (let field of fields) {
+        field.build();
     }
 
-    // Whenever the brush moves, re-rendering everything.
-    function renderAll() {
-        chart.each(render);
-        list.each(render);
-        d3.select('#active').text(formatNumber(all.value()));
+
+    let row = $("#charts-row");
+    for (let field of fields) {
+        let html = field.getHtml();
+        //console.log(html);
+        row.append(html);
     }
 
-    $(window).resize(() => {
-        $('.chart svg').remove();
-        renderAll();
-    });
+    m.refreshCharts();
 
-    // Like d3.timeFormat, but faster.
-    function parseDate(d) {
-        let [year, month, day] = d.split("-").map(x => parseInt(x));
-        return new Date(year, month - 1, day);
-    }
+    $("body").on("click",".reset-chart", function() {
+        let code = $(this).closest("[data-code]").data("code");
+        m.fieldsByCode[code].reset();
+   });
 
-    window.filter = filters => {
-        filters.forEach((d, i) => {
-            charts[i].filter(d);
-        });
-        renderAll();
-    };
-
-    window.reset = i => {
-        charts[i].filter(null);
-        renderAll();
-    };
-
-    function tripList(div) {
-
-        const tripsToShow = delayFields[0].dim.top(40);
-        div.each(function () {
-
-            const trip = div.selectAll('.trip')
-                .data(tripsToShow);
-
-            trip.exit().remove();
-
-            const tripEnter = trip.enter().append('tr').attr("class", "trip");
-
-            tripEnter.append('td')
-                .text(d => formatDate(d.date));
-
-            tripEnter.append('td')
-                .text(d => d.x_hour_local);
-
-            tripEnter.append('td')
-                .text(d => `${formatDayOfWeek(d.x_week_day_local)}`);
-
-            tripEnter.append('td')
-                .classed('early', d => d.x_avg_delay_arrival < 0)
-                .text(d => `${formatChange(d.x_avg_delay_arrival / 60)}` + ' ' + 'דקות');
-
-            tripEnter.merge(trip);
-
-            trip.order();
-        });
-    }
 }
 
-const getParams = query => {
+$(function () {
+    const getParams = query => {
     if (!query) {
         return {};
     }
@@ -258,10 +155,9 @@ const getParams = query => {
             params[key] = value ? decodeURIComponent(value.replace(/\+/g, ' ')) : '';
             return params;
         }, {});
-};
-
-$(function () {
+    };
     let params = getParams(window.location.search);
     showPage(params.start_date || "2017-10-01", params.end_date || "2017-10-31");
 });
+
 

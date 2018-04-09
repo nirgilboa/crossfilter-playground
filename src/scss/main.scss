@@ -1,5 +1,7 @@
 @import "custom";
 @import "~bootstrap/scss/bootstrap";
+@import "~billboard.js/dist/billboard";
+
 
 
 body {
@@ -15,6 +17,7 @@ body {
     background: lightgray;
     padding: 0.1rem 1.25rem;
     font-weight: 700;
+    line-height: 48px;
 }
 
 .trip-list {
@@ -38,4 +41,6 @@ body {
     stroke: #666;
 }
 
-
+.pointer {
+    cursor: pointer;
+}
