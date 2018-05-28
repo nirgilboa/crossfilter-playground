@@ -11,6 +11,7 @@ class Field {
         this.getter = getter;
         this.data = null;
         this.selectedKeys = new Set();
+        this.grouper = x=>x;
     }
 
     get cf() {
@@ -19,7 +20,7 @@ class Field {
 
     build() {
         this.dim = this.cf.dimension(this.getter);
-        this.group = this.dim.group();
+        this.group = this.dim.group(this.grouper); //this.grouper || undefined);
     }
 
 
@@ -180,10 +181,14 @@ export class DelayField extends Field {
         this.minDelay = -120;
         this.maxDelay = +600;
         this.step = 12;
+        this.grouper = x=>this.getGroupedDelay(x)
     }
 
     getDelay(x) {
-        let d = x[this.code];
+        return x[this.code];
+    }
+
+    getGroupedDelay(d) {
         let min = this.minDelay;
         let max = this.maxDelay;
         d = Math.max(min, d);
