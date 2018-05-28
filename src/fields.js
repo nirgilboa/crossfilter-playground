@@ -1,6 +1,7 @@
 import bb from "billboard.js";
 import * as d3 from "d3";
-import {kvsToObject} from "./utils";
+import {formatDate, kvsToObject} from "./utils";
+import {DAYS_OF_WEEK} from "./enums";
 
 class Field {
     constructor(m, title, code, getter) {
@@ -144,16 +145,6 @@ class Field {
 
 export class WeekDayField extends Field {
     getData(kvs) {
-        const DAYS_OF_WEEK = [
-        'ראשון',
-        'שני',
-        'שלישי',
-        'רביעי',
-        'חמישי',
-        'שישי',
-        'שבת',
-        ];
-
         let result = [];
         let kvsObj = kvsToObject(kvs);
         for (let wd = 0 ; wd < 7 ; wd++) {
@@ -174,7 +165,7 @@ export class DateField extends Field {
             return {
                 'key': kv.key,
                 'value': kv.value,
-                'name': `${d.getDate()}/${1+d.getMonth()}/${d.getFullYear()}`,
+                'name': formatDate(new Date(kv.key)),
             }
         })
     }

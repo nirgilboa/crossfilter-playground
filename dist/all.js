@@ -36076,7 +36076,11 @@ __webpack_require__(553);
 
 __webpack_require__(558);
 
+var _enums = __webpack_require__(561);
+
 var _fields = __webpack_require__(559);
+
+var _utils = __webpack_require__(560);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -36174,6 +36178,7 @@ var Manager = function () {
         this.trips = trips;
         this.cf = (0, _crossfilter2.default)(trips);
         var all = this.cf.groupAll();
+        this.listFieldCode = 'x_last_delay_arrival';
     }
 
     _createClass(Manager, [{
@@ -36229,21 +36234,48 @@ var Manager = function () {
                     }
                 }
             }
+
+            this.refreshList();
         }
     }, {
-        key: 'setFields',
-        value: function setFields(fields) {
-            this.fields = fields;
-            this.fieldsByCode = {};
+        key: 'refreshList',
+        value: function refreshList() {
+            var _this = this;
+
+            var listField = this.fieldsByCode[this.listFieldCode];
+            var top = listField.dim.top(50);
+            var theadTr = $("#trip-list thead tr");
+            theadTr.empty();
+            theadTr.append("<th>תאריך</th>" + "<th>שעת יציאה</th>" + "<th>יום בשבוע</th>");
+
+            var _loop = function _loop(name, code) {
+                var th = $('<th data-col-code="code"></th>');
+                if (code == _this.listFieldCode) {
+                    th.append('<i class="fas fa-sort-amount-down"></i>');
+                }
+                var span = $('<span class="pointer"></span>').text(name);
+                th.append(span);
+                span.on("click", function () {
+                    _this.listFieldCode = code;
+                    _this.refreshList();
+                });
+                theadTr.append(th);
+            };
+
             var _iteratorNormalCompletion4 = true;
             var _didIteratorError4 = false;
             var _iteratorError4 = undefined;
 
             try {
-                for (var _iterator4 = this.fields[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                    var f = _step4.value;
+                for (var _iterator4 = DELAY_FIELDS[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                    var _ref = _step4.value;
 
-                    this.fieldsByCode[f.code] = f;
+                    var _ref2 = _slicedToArray(_ref, 2);
+
+                    var name = _ref2[0];
+                    var code = _ref2[1];
+
+                    _loop(name, code);
                 }
             } catch (err) {
                 _didIteratorError4 = true;
@@ -36259,11 +36291,108 @@ var Manager = function () {
                     }
                 }
             }
+
+            var tbody = $("#trip-list tbody");
+            tbody.empty();
+            var _iteratorNormalCompletion5 = true;
+            var _didIteratorError5 = false;
+            var _iteratorError5 = undefined;
+
+            try {
+                for (var _iterator5 = top[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                    var trip = _step5.value;
+
+                    var tr = $('<tr></tr>');
+                    tr.append($('<td></td>').text((0, _utils.formatDate)(trip.date)));
+                    tr.append($('<td></td>').text(trip.x_hour_local));
+                    tr.append($('<td></td>').text(_enums.DAYS_OF_WEEK[trip.x_week_day_local]));
+
+                    var _iteratorNormalCompletion6 = true;
+                    var _didIteratorError6 = false;
+                    var _iteratorError6 = undefined;
+
+                    try {
+                        for (var _iterator6 = DELAY_FIELDS[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                            var _ref3 = _step6.value;
+
+                            var _ref4 = _slicedToArray(_ref3, 2);
+
+                            var _name = _ref4[0];
+                            var _code = _ref4[1];
+
+                            var minutes = Math.floor(trip[_code] / 60);
+                            var seconds = Math.floor(trip[_code] % 60);
+                            var v = minutes + ':' + (seconds >= 10 ? seconds : '0' + seconds);
+                            tr.append($('<td></td>').text(v));
+                        }
+                    } catch (err) {
+                        _didIteratorError6 = true;
+                        _iteratorError6 = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                                _iterator6.return();
+                            }
+                        } finally {
+                            if (_didIteratorError6) {
+                                throw _iteratorError6;
+                            }
+                        }
+                    }
+
+                    tbody.append(tr);
+                }
+            } catch (err) {
+                _didIteratorError5 = true;
+                _iteratorError5 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                        _iterator5.return();
+                    }
+                } finally {
+                    if (_didIteratorError5) {
+                        throw _iteratorError5;
+                    }
+                }
+            }
+        }
+    }, {
+        key: 'setFields',
+        value: function setFields(fields) {
+            this.fields = fields;
+            this.fieldsByCode = {};
+            var _iteratorNormalCompletion7 = true;
+            var _didIteratorError7 = false;
+            var _iteratorError7 = undefined;
+
+            try {
+                for (var _iterator7 = this.fields[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+                    var f = _step7.value;
+
+                    this.fieldsByCode[f.code] = f;
+                }
+            } catch (err) {
+                _didIteratorError7 = true;
+                _iteratorError7 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                        _iterator7.return();
+                    }
+                } finally {
+                    if (_didIteratorError7) {
+                        throw _iteratorError7;
+                    }
+                }
+            }
         }
     }]);
 
     return Manager;
 }();
+
+var DELAY_FIELDS = [['איחור בתחנה אחרונה', 'x_last_delay_arrival'], ['איחור מקסימלי', 'x_max_delay_arrival'], ['איחור ממוצע', 'x_avg_delay_arrival']];
 
 function renderCharts(trips) {
     // A little coercion, since the CSV is untyped.
@@ -36275,11 +36404,36 @@ function renderCharts(trips) {
     var m = new Manager(trips);
     window.m = m;
     var fields = [];
-    var _arr = [['איחור בתחנה אחרונה', 'x_last_delay_arrival'], ['איחור מקסימלי', 'x_max_delay_arrival'], ['איחור ממוצע', 'x_avg_delay_arrival']];
-    for (var _i = 0; _i < _arr.length; _i++) {
-        var df = _arr[_i];
-        fields.push(new _fields.DelayField(m, df[0], df[1]));
+    var _iteratorNormalCompletion8 = true;
+    var _didIteratorError8 = false;
+    var _iteratorError8 = undefined;
+
+    try {
+        for (var _iterator8 = DELAY_FIELDS[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+            var _ref5 = _step8.value;
+
+            var _ref6 = _slicedToArray(_ref5, 2);
+
+            var name = _ref6[0];
+            var code = _ref6[1];
+
+            fields.push(new _fields.DelayField(m, name, code));
+        }
+    } catch (err) {
+        _didIteratorError8 = true;
+        _iteratorError8 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion8 && _iterator8.return) {
+                _iterator8.return();
+            }
+        } finally {
+            if (_didIteratorError8) {
+                throw _iteratorError8;
+            }
+        }
     }
+
     fields = fields.concat([new _fields.HoursField(m, 'שעת יציאה', 'hour', function (d) {
         return d.x_hour_local;
     }),
@@ -36294,55 +36448,55 @@ function renderCharts(trips) {
 
     m.setFields(fields);
 
-    var _iteratorNormalCompletion5 = true;
-    var _didIteratorError5 = false;
-    var _iteratorError5 = undefined;
+    var _iteratorNormalCompletion9 = true;
+    var _didIteratorError9 = false;
+    var _iteratorError9 = undefined;
 
     try {
-        for (var _iterator5 = fields[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-            var field = _step5.value;
+        for (var _iterator9 = fields[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+            var field = _step9.value;
 
             field.build();
         }
     } catch (err) {
-        _didIteratorError5 = true;
-        _iteratorError5 = err;
+        _didIteratorError9 = true;
+        _iteratorError9 = err;
     } finally {
         try {
-            if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                _iterator5.return();
+            if (!_iteratorNormalCompletion9 && _iterator9.return) {
+                _iterator9.return();
             }
         } finally {
-            if (_didIteratorError5) {
-                throw _iteratorError5;
+            if (_didIteratorError9) {
+                throw _iteratorError9;
             }
         }
     }
 
     var row = $("#charts-row");
-    var _iteratorNormalCompletion6 = true;
-    var _didIteratorError6 = false;
-    var _iteratorError6 = undefined;
+    var _iteratorNormalCompletion10 = true;
+    var _didIteratorError10 = false;
+    var _iteratorError10 = undefined;
 
     try {
-        for (var _iterator6 = fields[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-            var _field2 = _step6.value;
+        for (var _iterator10 = fields[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+            var _field2 = _step10.value;
 
             var html = _field2.getHtml();
             //console.log(html);
             row.append(html);
         }
     } catch (err) {
-        _didIteratorError6 = true;
-        _iteratorError6 = err;
+        _didIteratorError10 = true;
+        _iteratorError10 = err;
     } finally {
         try {
-            if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                _iterator6.return();
+            if (!_iteratorNormalCompletion10 && _iterator10.return) {
+                _iterator10.return();
             }
         } finally {
-            if (_didIteratorError6) {
-                throw _iteratorError6;
+            if (_didIteratorError10) {
+                throw _iteratorError10;
             }
         }
     }
@@ -57686,6 +57840,8 @@ var d3 = _interopRequireWildcard(_d);
 
 var _utils = __webpack_require__(560);
 
+var _enums = __webpack_require__(561);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -57860,15 +58016,13 @@ var WeekDayField = exports.WeekDayField = function (_Field) {
     _createClass(WeekDayField, [{
         key: "getData",
         value: function getData(kvs) {
-            var DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-
             var result = [];
             var kvsObj = (0, _utils.kvsToObject)(kvs);
             for (var wd = 0; wd < 7; wd++) {
                 result.push({
                     'key': wd,
                     'value': kvsObj[wd] || 0,
-                    'name': DAYS_OF_WEEK[wd]
+                    'name': _enums.DAYS_OF_WEEK[wd]
                 });
             }
             return result;
@@ -57895,7 +58049,7 @@ var DateField = exports.DateField = function (_Field2) {
                 return {
                     'key': kv.key,
                     'value': kv.value,
-                    'name': d.getDate() + "/" + (1 + d.getMonth()) + "/" + d.getFullYear()
+                    'name': (0, _utils.formatDate)(new Date(kv.key))
                 };
             });
         }
@@ -58078,6 +58232,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.kvsToObject = kvsToObject;
+exports.formatDate = formatDate;
 function kvsToObject(kvs) {
     var result = {};
     var _iteratorNormalCompletion = true;
@@ -58107,6 +58262,22 @@ function kvsToObject(kvs) {
 
     return result;
 }
+
+function formatDate(dt) {
+    return dt.getDate() + "/" + (1 + dt.getMonth()) + "/" + dt.getFullYear();
+}
+
+/***/ }),
+/* 561 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+        value: true
+});
+var DAYS_OF_WEEK = exports.DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 
 /***/ })
 /******/ ]);

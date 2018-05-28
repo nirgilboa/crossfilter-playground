@@ -6,8 +6,11 @@ import Popper from 'popper.js';
 import 'bootstrap';
 import './scss/main.scss';
 import './fa/fontawesome-all.js';
+import {DAYS_OF_WEEK} from "./enums";
+
 
 import {DelayField, DateField, StopsCountField, WeekDayField, HoursField} from './fields.js'
+import {formatDate} from "./utils";
 
 function parseDate(d) {
     let [year, month, day] = d.split("-").map(x => parseInt(x));
@@ -74,6 +77,7 @@ class Manager {
         this.trips = trips;
         this.cf = crossfilter(trips);
         let all = this.cf.groupAll();
+        this.listFieldCode = 'x_last_delay_arrival'
     }
 
     refreshCharts() {
@@ -85,9 +89,47 @@ class Manager {
         for (let field of this.fields) {
             field.renderChart();
         }
-
-
+        this.refreshList();
     }
+    refreshList() {
+        let listField = this.fieldsByCode[this.listFieldCode];
+        let top = listField.dim.top(50);
+        let theadTr = $("#trip-list thead tr");
+        theadTr.empty();
+        theadTr.append("<th>תאריך</th>" +
+                       "<th>שעת יציאה</th>" +
+                       "<th>יום בשבוע</th>");
+        for (let [name, code] of DELAY_FIELDS) {
+            let th = $('<th data-col-code="code"></th>');
+            if (code == this.listFieldCode) {
+                th.append('<i class="fas fa-sort-amount-down"></i>');
+            }
+            let span = $('<span class="pointer"></span>').text(name)
+            th.append(span);
+            span.on("click", () => {
+                this.listFieldCode = code;
+                this.refreshList();
+            });
+            theadTr.append(th);
+        }
+        let tbody = $("#trip-list tbody");
+        tbody.empty();
+        for (let trip of top) {
+            let tr = $('<tr></tr>');
+            tr.append($('<td></td>').text(formatDate(trip.date)));
+            tr.append($('<td></td>').text(trip.x_hour_local));
+            tr.append($('<td></td>').text(DAYS_OF_WEEK[trip.x_week_day_local]));
+
+            for (let [name, code] of DELAY_FIELDS) {
+                let minutes = Math.floor(trip[code]/60);
+                let seconds = Math.floor(trip[code]%60);
+                let v = `${minutes}:${seconds >= 10 ? seconds : '0' + seconds}`;
+                tr.append($('<td></td>').text(v))
+            }
+            tbody.append(tr)
+        }
+    }
+
     setFields(fields) {
         this.fields = fields;
         this.fieldsByCode = {};
@@ -96,6 +138,12 @@ class Manager {
         }
     }
 }
+
+let DELAY_FIELDS = [
+    ['איחור בתחנה אחרונה', 'x_last_delay_arrival'],
+        ['איחור מקסימלי', 'x_max_delay_arrival'],
+        ['איחור ממוצע', 'x_avg_delay_arrival']
+]
 
 function renderCharts(trips) {
     // A little coercion, since the CSV is untyped.
@@ -107,12 +155,8 @@ function renderCharts(trips) {
     let m = new Manager(trips);
     window.m = m;
     let fields = [];
-    for (let df of [
-        ['איחור בתחנה אחרונה', 'x_last_delay_arrival'],
-        ['איחור מקסימלי', 'x_max_delay_arrival'],
-        ['איחור ממוצע', 'x_avg_delay_arrival']
-        ]) {
-        fields.push(new DelayField(m, df[0], df[1]))
+    for (let [name, code] of DELAY_FIELDS) {
+        fields.push(new DelayField(m, name, code))
     }
     fields = fields.concat([
          new HoursField(m, 'שעת יציאה', 'hour', d => d.x_hour_local),
