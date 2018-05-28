@@ -35,6 +35,10 @@ class Field {
                 <div class="card">
                     <div class="chart-header">
                         ${title}
+                        - 
+                        מציג
+                        <span class="dim-count"></span>
+                        נסיעות
                         <span class="float-right">
                             <span class="pointer reset-chart" title="בטל את כל הבחירות" style="display: none">
                                 <i class="fas fa-times-circle"></i>
@@ -74,10 +78,8 @@ class Field {
         else {
             this.selectedKeys.add(key);
         }
-
-
         this.manager.refreshCharts();
-        // console.log(this.selectedKeys);
+        //console.log(this.selectedKeys);
     }
 
     reset() {
@@ -96,12 +98,22 @@ class Field {
     }
 
     applyFilter(){
-        this.dim.filter(d => this.selectedKeys.size === 0 || this.selectedKeys.has(d));
+        //console.log(this.selectedKeys);
+        let is = d => {
+            if (this.selectedKeys.size === 0) {
+                return true;
+            }
+            return this.selectedKeys.has(d)
+        }
+        this.dim.filter(d => is(d));
     }
 
     renderChart() {
         this.data = this.buildData();
+
         $(`[data-code=${this.code}] .reset-chart`).toggle(this.selectedKeys.size > 0);
+        let dimCount = this.dim.groupAll().value();
+        $(`[data-code=${this.code}] .dim-count`).text(dimCount);
         if (this.chart)
             this.chart.destroy();
         let options = {
@@ -156,27 +168,15 @@ export class WeekDayField extends Field {
 }
 
 export class DateField extends Field {
-    getDomain() {
-        let trips = this.trips;
-        let minDate = trips[0].date;
-        let maxDate = trips[0].date;
-        for (let trip of trips) {
-            if (trip.date.getTime() > maxDate.getTime()) {
-                maxDate = trip.date;
+    getData(kvs) {
+        return kvs.map(kv=> {
+            let d = new Date(kv.key);
+            return {
+                'key': kv.key,
+                'value': kv.value,
+                'name': `${d.getDate()}/${1+d.getMonth()}/${d.getFullYear()}`,
             }
-            if (trip.date.getTime() < minDate.getTime()) {
-                minDate = trip.date;
-            }
-        }
-        return [minDate, maxDate];
-    }
-    x() {
-        return d3.scaleTime().domain(this.getDomain());
-    }
-    getDomainCount() {
-        let result = d3.scaleTime().domain(this.getDomain())
-            .ticks(d3.timeDay.every(1)).length
-        return result;
+        })
     }
     getWidth() {
         return 12;

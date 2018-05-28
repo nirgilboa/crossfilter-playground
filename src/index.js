@@ -77,6 +77,7 @@ class Manager {
     }
 
     refreshCharts() {
+        $("#total_count").text(this.trips.length);
         for (let field of this.fields) {
             field.applyFilter();
         }
@@ -84,6 +85,8 @@ class Manager {
         for (let field of this.fields) {
             field.renderChart();
         }
+
+
     }
     setFields(fields) {
         this.fields = fields;
@@ -116,7 +119,7 @@ function renderCharts(trips) {
         // Sunday is zero
          new WeekDayField(m, 'יום בשבוע', 'weekDay', d => d.x_week_day_local),
          new StopsCountField(m, 'מספר תחנות','stopsCount', d => d.samples_count),
-    //     new DateField(m, 'תאריך','date', d => d3.timeDay(d.date)),
+         new DateField(m, 'תאריך','date', d => d3.timeDay(d.date).getTime()),
     ]);
 
     m.setFields(fields);
