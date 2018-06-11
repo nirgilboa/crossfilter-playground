@@ -81,7 +81,17 @@ class Manager {
     }
 
     refreshCharts() {
+        for (let field of this.fields) {
+            field.startWip();
+        }
+        window.setTimeout(() => {
+            this.refreshChartsImpl();
+        }, 10);
+    }
+    refreshChartsImpl() {
         $("#total_count").text(this.trips.length);
+
+
         for (let field of this.fields) {
             field.applyFilter();
         }
@@ -89,8 +99,13 @@ class Manager {
         for (let field of this.fields) {
             field.renderChart();
         }
+
         this.refreshList();
+        for (let field of this.fields) {
+            field.endWip();
+        }
     }
+
     refreshList() {
         let listField = this.fieldsByCode[this.listFieldCode];
         let top = listField.dim.top(50);

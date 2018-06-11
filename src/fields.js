@@ -49,6 +49,9 @@ class Field {
                     </div>
                     <div class="chart" id=${this.htmlId}>
                     </div>
+                    <div class="wip" style="display:none">
+                        <i class="fa fa-spin fa-spinner fa-5x"></i>
+                    </div>
                 </div>
             </div>`;
     }
@@ -72,7 +75,6 @@ class Field {
     }
 
     onClick(d) {
-        // console.log(d);
         let key = this.data[d.index].key;
         if (this.selectedKeys.has(key)) {
             this.selectedKeys.delete(key);
@@ -99,15 +101,23 @@ class Field {
         return color;
     }
 
+    filterData(d) {
+        return this.selectedKeys.has(d);
+    }
+
     applyFilter(){
         //console.log(this.selectedKeys);
-        let is = d => {
-            if (this.selectedKeys.size === 0) {
-                return true;
-            }
-            return this.selectedKeys.has(d)
-        }
-        this.dim.filter(d => is(d));
+        this.dim.filter(d => this.selectedKeys.size == 0 || this.filterData(d));
+    }
+
+    startWip() {
+        let div = $(`[data-code=${this.code}]`);
+        div.find(".wip").show();
+    }
+
+    endWip() {
+        let div = $(`[data-code=${this.code}]`);
+        div.find(".wip").hide();
     }
 
     renderChart() {
@@ -188,19 +198,41 @@ export class DelayField extends Field {
         return x[this.code];
     }
 
+
+    roundStep(d) {
+        if (d > 0) {
+            return d - d % this.step;
+        }
+        return d - (12 - (-d) % 12)%12;
+    }
+
     getGroupedDelay(d) {
         let min = this.minDelay;
         let max = this.maxDelay;
         d = Math.max(min, d);
         d = Math.min(max, d);
-        let result = d - (this.step+(d % this.step))%this.step;
+        let result = this.roundStep(d)
         if (result > this.maxDelay || result < this.minDelay) {
             throw `illegal result d = ${d} result = ${result}`;
         }
         return result;
     }
 
-
+    filterData(d) {
+        // we need to convert back to seconds
+        for (let k of this.selectedKeys) {
+            if (k == this.minDelay && d <= k + this.step) {
+                return true;
+            }
+            if (k == this.maxDelay && d >= this.maxDelay) {
+                return true;
+            }
+            if (d >= k && d < k + this.step) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     getData(kvs) {
         let kvsObj = kvsToObject(kvs);
